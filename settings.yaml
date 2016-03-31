@@ -1,0 +1,25 @@
+# presentation times
+times:
+   fix: [0.5, 0.75]
+   digit: 0.15
+
+# keys for yes/no (mapping is randomized)
+resp_keys: [f, j]
+
+# fixation cross or circle, units are in degrees
+fixation:
+   shape: circle
+   height: 0.5
+   width: 0.1
+
+# quit button
+quit:
+   enable: True
+   button: q
+
+# port and triggers
+send_triggers: False
+port_adress: x0H43
+triggers:
+   fix: 11
+   digit: 10
