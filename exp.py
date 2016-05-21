@@ -243,46 +243,9 @@ def s2frames(time_in_seconds, frame_time):
             time_in_frames[k] = toframes(v)
     return time_in_frames
 
-# stimuli
-# -------
-def fix(win, height=0.3, width=0.1, shape='circle', color=(0.5, 0.5, 0.5)):
-    args = {'fillColor': color, 'lineColor': color,
-        'interpolate': True, 'units': 'deg'}
-    if shape == 'circle':
-        fix_stim = visual.Circle(win, radius=height/2,
-            edges=32, **args)
-    else:
-        h, w = (height/2, width/2)
-        vert = np.array([[w, -h], [w, h], [-w, h], [-w, -h]])
-
-        args.update(closeShape=True)
-        fix_stim = [visual.ShapeStim(win, vertices=v, **args)
-                    for v in [vert, np.fliplr(vert)]]
-    return fix_stim
-
 
 # utils
 # -----
-def shuffle_df(df, cutto=None):
-    ind = np.array(df.index)
-    np.random.shuffle(ind)
-    cutto = len(df) if cutto is None else cutto
-    df = df.iloc[ind[:cutto], :]
-    df = df.reset_index(drop=True)
-    return df
-
-
-def other_digits(digits, alldigits=None):
-    if alldigits is None:
-        alldigits = range(10)
-    return [x for x in alldigits if x not in digits]
-
-
-def bool_to_pl(b):
-    assert isinstance(b, bool)
-    return ['NIE', 'TAK'][int(b)]
-
-
 def isnull(x):
     if x is None:
         return True
