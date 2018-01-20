@@ -24,17 +24,22 @@ from psychopy import visual, event, core, gui
 # subject?
 # port_adress?
 # quitopt?
-# 
+#
 
 # consider:
 # start exp without a window
 # change how subject and port stuff is held in Experiment
 
+# resp_keys and resp_mapping
+# classical setup is True / False
+# but could be for example: ['triangle', 'square', 'circle']
+# there should be a method for that - so one could override
+
 class Experiment(object):
 
     def __init__(self, window, paramfile, frame_time=None):
         self.window = window
-        if frame_time == None:
+        if frame_time is None:
             self.frame_time = get_frame_time(window)
         else:
             self.frame_time = frame_time
@@ -65,10 +70,17 @@ class Experiment(object):
         self.send_triggers = self.settings['send_triggers']
         self.port_adress = self.settings['port_adress']
         self.triggers = self.settings['triggers']
+        self.clear_trigger = 2 # clear during second frame
 
         self.create_trials()
         self.create_stimuli()
         self.set_up_ports()
+
+    def create_trials(self):
+        pass
+
+    def create_stimuli(self):
+        pass
 
     def set_window(self, window):
         self.window = window
@@ -84,17 +96,17 @@ class Experiment(object):
         return time
 
     def show_all_trials(self):
-            trials_without_break = 0
-            self.show_keymap()
-            for t in range(1, self.num_trials+1):
-                self.show_trial(t)
-                self.save_data()
-                trials_without_break += 1
-                if trials_without_break >= self.settings['break_every_trials']:
-                    trials_without_break = 0
-                    self.present_break()
-                    self.show_keymap()
-            core.quit()
+        trials_without_break = 0
+        self.show_keymap()
+        for t in range(1, self.num_trials+1):
+            self.show_trial(t)
+            self.save_data()
+            trials_without_break += 1
+            if trials_without_break >= self.settings['break_every_trials']:
+                trials_without_break = 0
+                self.present_break()
+                self.show_keymap()
+        core.quit()
 
     def run_trials(self, trials):
         for t in trials:
@@ -107,12 +119,12 @@ class Experiment(object):
     def show_feedback(self, corr):
         corr = int(corr)
         stims = ['feedback_incorrect', 'feedback_correct']
-        fdb = [self.stim[s] for s in stims][corr]
+        fdb = self.stim[stims[corr]]
         fdb.draw()
         self.window.flip()
-        core.wait(0.7)
+        core.wait(0.7) # TODO - this could be a variable
 
-    # is this needed?
+    # this shouldn't be needed
     def show_fix(self, fix_time=None):
         if fix_time is None:
             fix_time = self.get_random_time(fix_time, 'fix')
@@ -132,6 +144,7 @@ class Experiment(object):
                 self.window.flip()
 
     def show_element(self, elem, time):
+        '''show given stimulus for given number of frames.'''
         elem_show = True
         is_list = isinstance(elem, list)
         if not is_list and elem not in self.stim:
@@ -143,22 +156,32 @@ class Experiment(object):
             self.set_trigger(elem[0])
         for f in range(time):
             if elem_show:
-                if f == 2:
+                if f == self.clear_trigger:
                     self.set_trigger(0)
                 for el in elem:
                     self.stim[el].draw()
             self.window.flip()
 
+    # TODO: could change getKeys to check only quit-relevant keys
     def check_quit(self, key=None):
+        '''Checks whether quit is enabled and relevant quit button has been
+        pressed.'''
         if self.quitopt['enable']:
-            if key == None:
+            # check keys
+            if key is None:
                 key = event.getKeys()
-            if key == None or len(key) == 0:
+
+            # no keys pressed
+            if key is None or len(key) == 0:
                 return
+
+            # convert keys
             if isinstance(key[0], tuple):
                 key = [k[0] for k in key]
             if isinstance(key, tuple):
                 key, _ = key
+
+            # check quit
             if self.quitopt['button'] in key:
                 core.quit()
 
@@ -178,6 +201,7 @@ class Experiment(object):
             k = event.getKeys()
             self.check_quit(key=k)
 
+    # TODO: that should be modifiable
     def show_keymap(self):
         args = {'units': 'deg', 'height':self.settings['text_size']}
         show_map = {k: bool_to_pl(v)
@@ -190,6 +214,7 @@ class Experiment(object):
         k = event.waitKeys()
         self.check_quit(key=k)
 
+    # TODO: that should be modifiable
     def get_subject_id(self):
         myDlg = gui.Dlg(title="Subject Info", size = (800,600))
         myDlg.addText('Informacje o osobie badanej')
@@ -205,6 +230,7 @@ class Experiment(object):
         else:
             core.quit()
 
+    # TODO: could be modified to use psychopy
     def set_up_ports(self):
         if self.send_triggers:
             try:
@@ -232,6 +258,7 @@ def get_frame_time(win, frames=25):
         frame_rate = win.getActualFrameRate(nIdentical = frames)
     return 1.0 / frame_rate
 
+
 def s2frames(time_in_seconds, frame_time):
     assert isinstance(time_in_seconds, dict)
     time_in_frames = dict()
@@ -255,9 +282,12 @@ def isnull(x):
         return False
 
 
-
 # instructions
 # ------------
+# TODO:
+# - [ ] this only does functions and images, the original could handle
+#       yaml files too.
+# - [ ] add option to skip function with relevant keys
 class Instructions:
     def __init__(self, win, instrfiles):
         self.win = win
