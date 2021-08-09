@@ -43,47 +43,28 @@ from psychopy import visual, event, core, gui
 
 class Experiment(object):
 
-    def __init__(self, window, paramfile, frame_time=None):
-        self.window = window
-        if frame_time is None:
-            self.frame_time = get_frame_time(window)
-        else:
-            self.frame_time = frame_time
+    def __init__(self, base_dir=None, frame_time=None):
 
-        file_name = os.path.join(os.getcwd(), paramfile)
-        with open(file_name, 'r') as f:
-            settings = yaml.load(f)
+        # ADD auto set base_dir if None
+        self.base_dir = base_dir
+        self.data_dir = base_dir / 'data'
 
-        self.resp_keys = settings['resp_keys']
-        self.times = s2frames(settings['times'], self.frame_time)
-        self.settings = settings
+        # if data dir does not exist -> create
+        if not self.data_dir.exists():
+            os.mkdir(self.data_dir)
 
-        rnd = random.sample([True, False], 1)[0]
-        self.resp_mapping = {self.resp_keys[0]: rnd}
-        self.resp_mapping.update({self.resp_keys[1]: not rnd})
-
-        self.quitopt = settings['quit']
-        if self.quitopt['enable']:
-            self.resp_keys.append(self.quitopt['button'])
+        # load settings
+        config_file = base_dir / 'settings.yaml'
+        read_settings(self, config_file)
+        self.set_resp()
 
         self.clock = core.Clock()
+        self.exp_clock = core.Clock()
         self.current_trial = 0
 
-        self.subject = dict()
-        self.subject['id'] = 'test_subject'
-        self.num_trials = self.df.shape[0]
-
-        self.send_triggers = self.settings['send_triggers']
-        self.port_adress = self.settings['port_adress']
-        self.triggers = self.settings['triggers']
-        self.clear_trigger = 2 # clear during second frame
-
-        self.create_trials()
-        self.create_stimuli()
-        self.set_up_ports()
-
-    def create_trials(self):
-        pass
+        self.trigger_log = {'time': list(), 'trigger': list(), 'trial': list()}
+        self.trigger_device, self.send_trigger = set_up_triggers(
+            self.send_triggers)
 
     def create_stimuli(self):
         pass
