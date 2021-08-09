@@ -66,174 +66,21 @@ class Experiment(object):
         self.trigger_device, self.send_trigger = set_up_triggers(
             self.send_triggers)
 
-    def create_stimuli(self):
-        pass
 
     def set_window(self, window):
+        '''Change window for all stimuli and experiment object.'''
         self.window = window
-        self.fix.win = window
-        for d in self.digits:
-            d.win = window
-        for st in self.stim.values():
-            st.win = window
 
-    def get_random_time(self, time, key):
-        if time == None:
-            time = random.randint(*self.times[key])
-        return time
-
-    def show_all_trials(self):
-        trials_without_break = 0
-        self.show_keymap()
-        for t in range(1, self.num_trials+1):
-            self.show_trial(t)
-            self.save_data()
-            trials_without_break += 1
-            if trials_without_break >= self.settings['break_every_trials']:
-                trials_without_break = 0
-                self.present_break()
-                self.show_keymap()
-        core.quit()
-
-    def run_trials(self, trials):
-        for t in trials:
-            self.show_trial(t)
-            self.window.flip()
-            break_time = random.uniform(self.times['inter_trial'][0],
-                self.times['inter_trial'][1]+0.0001)
-            core.wait(round(break_time, 3))
-
-    def show_feedback(self, corr):
-        corr = int(corr)
-        stims = ['feedback_incorrect', 'feedback_correct']
-        fdb = self.stim[stims[corr]]
-        fdb.draw()
-        self.window.flip()
-        core.wait(0.7) # TODO - this could be a variable
-
-    # this shouldn't be needed
-    def show_fix(self, fix_time=None):
-        if fix_time is None:
-            fix_time = self.get_random_time(fix_time, 'fix')
-        self.set_trigger(self.triggers['fix'])
-        if isinstance(self.fix, list):
-            for t in range(fix_time):
-                if t == 2:
-                    self.set_trigger(0)
-                for el in self.fix:
-                    el.draw()
-                self.window.flip()
-        else:
-            for t in range(fix_time):
-                if t == 2:
-                    self.set_trigger(0)
-                self.fix.draw()
-                self.window.flip()
-
-    def show_element(self, elem, time):
-        '''show given stimulus for given number of frames.'''
-        elem_show = True
-        is_list = isinstance(elem, list)
-        if not is_list and elem not in self.stim:
-            elem_show = False
-        # draw element
-        if elem_show:
-            if not is_list:
-                elem = [elem]
-            self.set_trigger(elem[0])
-        for f in range(time):
-            if elem_show:
-                if f == self.clear_trigger:
-                    self.set_trigger(0)
-                for el in elem:
-                    self.stim[el].draw()
-            self.window.flip()
-
-    # TODO: could change getKeys to check only quit-relevant keys
-    def check_quit(self, key=None):
-        '''Checks whether quit is enabled and relevant quit button has been
-        pressed.'''
-        if self.quitopt['enable']:
-            # check keys
-            if key is None:
-                key = event.getKeys()
-
-            # no keys pressed
-            if key is None or len(key) == 0:
-                return
-
-            # convert keys
-            if isinstance(key[0], tuple):
-                key = [k[0] for k in key]
-            if isinstance(key, tuple):
-                key, _ = key
-
-            # check quit
-            if self.quitopt['button'] in key:
-                core.quit()
+        for stim in self.stim.values():
+            stim.win = window
 
     def save_data(self):
         full_path = os.path.join('data', self.subject['id'])
         self.df.to_csv(full_path + '.csv')
         self.df.to_excel(full_path + '.xls')
 
-    def present_break(self):
-        text = self.settings['tekst_przerwy']
-        text = text.replace('\\n', '\n')
-        text = visual.TextStim(self.window, text=text)
-        k = False
-        while not k:
-            text.draw()
-            self.window.flip()
-            k = event.getKeys()
-            self.check_quit(key=k)
 
-    # TODO: that should be modifiable
-    def show_keymap(self):
-        args = {'units': 'deg', 'height':self.settings['text_size']}
-        show_map = {k: bool_to_pl(v)
-            for k, v in six.iteritems(self.resp_mapping)}
-        text = u'Odpowiadasz klawiszami:\nf: {}\nj: {}'.format(
-            show_map['f'], show_map['j'])
-        stim = visual.TextStim(self.window, text=text, **args)
-        stim.draw()
-        self.window.flip()
-        k = event.waitKeys()
-        self.check_quit(key=k)
 
-    # TODO: that should be modifiable
-    def get_subject_id(self):
-        myDlg = gui.Dlg(title="Subject Info", size = (800,600))
-        myDlg.addText('Informacje o osobie badanej')
-        myDlg.addField('ID:')
-        myDlg.addField('wiek:', 30)
-        myDlg.addField(u'płeć:', choices=[u'kobieta', u'mężczyzna'])
-        myDlg.show()  # show dialog and wait for OK or Cancel
-
-        if myDlg.OK:  # Ok was pressed
-            self.subject['id'] = myDlg.data[0]
-            self.subject['age'] = myDlg.data[1]
-            self.subject['sex'] = myDlg.data[2]
-        else:
-            core.quit()
-
-    # TODO: could be modified to use psychopy
-    def set_up_ports(self):
-        if self.send_triggers:
-            try:
-                from ctypes import windll
-                windll.inpout32.Out32(self.port_adress, 111)
-                core.wait(0.1)
-                windll.inpout32.Out32(self.port_adress, 0)
-                self.inpout32 = windll.inpout32
-            except:
-                warnings.warn('Could not send test trigger. :(')
-                self.send_triggers = False
-
-    # send trigger could be lower-level
-    # set trigger - higher level
-    def send_trigger(self, code):
-        self.inpout32.Out32(self.port_address, code)
 
 
 # time
