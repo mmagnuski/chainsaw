@@ -107,10 +107,11 @@ def s2frames(time_in_seconds, frame_time):
 
 # utils
 # -----
+# - [ ] add numpy NaN
 def isnull(x):
     if x is None:
         return True
-    elif isinstance(x, list):
+    elif isinstance(x, (list, np.ndarray)):
         return len(x) == 0
     else:
         return False
