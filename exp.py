@@ -15,13 +15,19 @@ from psychopy import visual, event, core, gui
 
 
 # Experiment properties:
-# window   - psychopy window
-# clock    - psychopy clock
+# window       - psychopy window
+# clock        - psychopy clock used for timing responses
+# exp_clock    - psychopy clock used for timing the whole experiment
 # settings - read from a yaml file, see settings.yaml and settings.md
-# stim     - all stimuli objects
-# triggers - mapping between stimuli and trigger values
-# ...
-# subject?
+# stim     - dictionary str -> psychopy object containing all the stimuli used
+#            in the experiment
+# triggers - dictionary mapping between stimuli names and trigger values
+#
+# subject  - dictionary containing subject info, has to contain 'id' key
+#            containing a string with subject identifier
+#
+
+# more about settings
 # port_adress?
 # quitopt?
 #
