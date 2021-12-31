@@ -190,10 +190,16 @@ def waitKeys(device, keyList=None, timeStamped=False):
         return response['key'], response['time'] / 1000
 
 
-def getKeys(device, keyList=None):
-    '''Get all the pressed keys waiting in the buffer.'''
+def getKeys(device, keyList=None, timeStamped=False):
+    '''Emulates event.waitKeys for Cedrus response box or keyboard.
+
+    Get all the pressed keys waiting in the buffer.
+    '''
     if device is None:
-        return event.getKeys(keyList=keyList)
+        keys = event.getKeys(keyList=keyList, timeStamped=timeStamped)
+        if len(keys) > 0:
+            keys = keys[-1]
+        return keys
     else:
         keys, RTs = list(), list()
         device.poll_for_response()
