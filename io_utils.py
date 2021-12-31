@@ -2,9 +2,15 @@ from pathlib import Path
 import yaml
 
 import numpy as np
+import pandas as pd
+
+from psychopy import core, event
+from psychopy.clock import Clock
 
 
-def set_up_triggers(send_triggers, device='lpt', port_adress=None):
+# TODO - clean up and test LPT device mode
+def set_up_triggers(send_triggers, device='lpt', xid_devices=None,
+                    port_address=None):
     '''Prepare procedure for sending triggers.
 
     Find Cedrus C-POD device and send a test trigger. Requires the pyxid2
@@ -12,11 +18,23 @@ def set_up_triggers(send_triggers, device='lpt', port_adress=None):
 
     Parameters
     ----------
-    send_trigger : bool
+    send_triggers : bool
         Whether to send triggers. If ``False`` only function for logging
         triggers to a text file is returned. Otherwise, if ``True`` a function
         that sends triggers through c-pod (and also logs the triggers to a
         file) is returned.
+    device : str
+        The device to use to send triggers. Can be:
+        * ``'lpt'`` - to use LPT port
+        * ``'cpod'`` - to use Cedrus CPOD
+    xid_devices : list
+        Relevant for CPOD. If list of xid devices has been obtained earlier
+        (when setting up response box for example) - it can be passed through
+        this argument. This option is mostly useful for avoiding a rare bug
+        when trying to obtain the list of xid devices two times results in an
+        error the second time.
+    port_address : str
+        Relevant for LPT. String containing the address of the LPT port.
 
     Returns
     -------
@@ -34,8 +52,9 @@ def set_up_triggers(send_triggers, device='lpt', port_adress=None):
         import pyxid2
 
         # szukamy c-pod'a w liście urządzeń xid
-        devices = pyxid2.get_xid_devices()
-        has_cedrus_cpod = ["Cedrus C-POD" in str(dev) for dev in devices]
+        if xid_devices is None:
+            xid_devices = pyxid2.get_xid_devices()
+        has_cedrus_cpod = ["Cedrus C-POD" in str(dev) for dev in xid_devices]
 
         if not any(has_cedrus_cpod):
             raise RuntimeError('Could not find the Cedrus c-pod device!')
