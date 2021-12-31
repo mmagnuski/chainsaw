@@ -352,17 +352,22 @@ def apply_settings(exp, settings):
 
 # saving data
 # -----------
-def save_trigger_log(exp):
+def save_trigger_log(exp, postfix=''):
     '''Write trigger log to a .csv file.
 
-    Triggers are saved to default data directory (``exp.data_dir``)'''
-    df = pd.DataFrame(exp.trigger_log, columns=['time', 'trigger'])
-    fname = exp.data_dir / (exp.subject['id'] + '_trig.log')
-    df.to_csv(fname, index=False)
+    Triggers are saved to default data directory (``exp.data_dir``).'''
+    from_idx = exp.last_log_save
+    columns = ['time', 'trial', 'trigger']
+    part_save = {key: exp.trigger_log[key][from_idx:] for key in columns}
+    df = pd.DataFrame(part_save, columns=columns)
+    fname = exp.data_dir / (exp.subject['id'] + postfix + '_trig.log')
+    df.to_csv(fname, index=False, mode='a', header=from_idx == 0)
+    exp.last_log_save = len(exp.trigger_log[columns[0]])
 
 
-def save_beh_data(exp):
+def save_beh_data(exp, postfix=''):
     '''Save current behavioral data to .csv file in data directory.'''
-    fname = exp.data_dir / (exp.subject['id'] + '.csv')
-    exp.beh = exp.beh.infer_objects()
-    exp.beh.to_csv(fname)
+    fname = exp.data_dir / (exp.subject['id'] + postfix + '.csv')
+    save_beh = exp.beh.iloc[exp.last_beh_save:exp.current_idx + 1, :]
+    save_beh.to_csv(fname, mode='a', header=exp.current_idx == 0)
+    exp.last_beh_save = exp.current_idx + 1
