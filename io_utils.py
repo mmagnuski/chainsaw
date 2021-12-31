@@ -110,21 +110,29 @@ def send_trigger_lpt_inpout(exp, code, clock=None):
 
 def register_trigger(exp, code, clock=None):
     '''Add trigger time and value to log.'''
-    if clock is not None:
-        clock.reset()
+    reset_clock(clock)
     time = exp.exp_clock.getTime()
     exp.trigger_log['trigger'].append(code)
     exp.trigger_log['time'].append(time)
     exp.trigger_log['trial'].append(exp.current_trial)
 
 
+def reset_clock(clock):
+    if clock is not None:
+        if isinstance(clock, Clock):
+            clock.reset()
+        else:
+            # Cedrus response box
+            clock.reset_rt_timer()
+
+
 def set_trigger(exp, event, clock=None):
     '''Prepare trigger to be sent to be activated during next window flip.'''
     if isinstance(event, int):
-        exp.window.callOnFlip(exp.send_trigger, exp, event, clock=None)
+        exp.window.callOnFlip(exp.send_trigger, exp, event, clock=clock)
     elif event in exp.triggers:
         trig = exp.triggers[event]
-        exp.window.callOnFlip(exp.send_trigger, exp, trig, clock=None)
+        exp.window.callOnFlip(exp.send_trigger, exp, trig, clock=clock)
 
 
 def set_up_response_box(match="Cedrus RB-", error=True):
