@@ -135,9 +135,14 @@ def set_trigger(exp, event, clock=None):
         exp.window.callOnFlip(exp.send_trigger, exp, trig, clock=clock)
 
 
+# responses
+# ---------
 def set_up_response_box(match="Cedrus RB-", error=True):
     '''Set up Cedrus response box.'''
-    import pyxid2
+    try:
+        import pyxid2
+    except:
+        return None, None
 
     # szukamy c-pod'a w liście urządzeń xid
     devices = pyxid2.get_xid_devices()
@@ -148,7 +153,7 @@ def set_up_response_box(match="Cedrus RB-", error=True):
         assert response_box.is_response_device()
         response_box.reset_base_timer()
         response_box.reset_rt_timer()
-        return response_box
+        return response_box, devices
     else:
         if error:
             if len(devices) == 0:
@@ -161,7 +166,7 @@ def set_up_response_box(match="Cedrus RB-", error=True):
                     msg += '\n* ' + str(dev)
                 raise RuntimeError(msg)
         else:
-            return None
+            return None, None
 
 
 # - [ ] consider timing Cedrus responses with psychopy clock
