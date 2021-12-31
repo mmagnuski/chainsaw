@@ -216,7 +216,82 @@ def getKeys(device, keyList=None, timeStamped=False):
         return keys, RTs
 
 
-# default get_subject_info()
+# TODO - check / clean
+def check_quit(exp, key=None):
+    '''Check if quit key has been pressed.'''
+    if exp.quitopt['enable']:
+        if key is None or exp.response_device is not None:
+            # quit button never enabled on response pad - to avoid errors
+            key = event.getKeys(keyList=[exp.quitopt['button']])
+        if key is None or len(key) == 0:
+            return
+        if isinstance(key[0], tuple):
+            key = [k[0] for k in key]
+        if isinstance(key, tuple):
+            key, _ = key
+        if exp.quitopt['button'] in key:
+            core.quit()
+
+
+# TODO: check if universal
+def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
+                     send_trigger=True):
+    '''Wait for the response given by subject and check its correctness.
+
+    This function uses ``.current_idx`` attribute of the Experiment to locate
+    the ``.beh`` dataframe row to which responses should be saved.
+
+    Parameters
+    ----------
+    exp : Experiment
+        Experiment object - response keys, timings and experiment clock are
+        taken from this object.
+    correct_resp : str
+        Correct response for this question.
+
+    Returns
+    -------
+    resp : str
+        Response key.
+    ifcorrect : bool
+        Whether the response is correct.
+    RT : float
+        Reaction time in seconds.
+    '''
+    if key is None and rt is None:
+        key, rt = waitKeys(exp.response_device, keyList=exp.resp_keys,
+                           timeStamped=exp.clock)
+    if send_trigger:
+        exp.send_trigger(exp, exp.triggers[key])
+    exp.check_quit(key=key)
+
+    # check if answer is correct:
+    correct_resp = (correct_resp if correct_resp is not None
+                    else exp.trials.iloc[exp.current_idx, :].correct_resp)
+    response = exp.resp_mapping[key]
+    ifcorrect = response == correct_resp if key is not None else False
+
+    row = exp.beh.index[exp.current_idx] if row is None else row
+    exp.beh.loc[row, 'key'] = key
+    exp.beh.loc[row, 'resp'] = response
+    exp.beh.loc[row, 'ifcorrect'] = ifcorrect
+    exp.beh.loc[row, 'RT'] = rt
+    return key, ifcorrect, rt
+
+
+def clear_buffer(device=None):
+    '''Clear buffer of the keyboard or the Cedurs response box.'''
+    if device is None:
+        event.getKeys()
+    else:
+        # taken from psychopy builder script:
+        device.poll_for_response()
+        while len(device.response_queue):
+            device.clear_response_queue()
+            device.poll_for_response()  # often there are more resps waiting!
+
+
+# REMOVE - it is defined somewhere else default get_subject_info()
 def get_subject_info(exp):
     myDlg = gui.Dlg(title="Subject Info", size=(800,600))
     myDlg.addText('Informacje o osobie badanej')
@@ -231,6 +306,7 @@ def get_subject_info(exp):
         self.subject['sex'] = myDlg.data[2]
     else:
         core.quit()
+
 
 # read settings
 # -------------
