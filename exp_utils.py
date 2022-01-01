@@ -14,7 +14,7 @@ from .io_utils import (check_quit, set_trigger, set_up_triggers,
 
 
 class Experiment(object):
-    def __init__(self, base_dir):
+    def __init__(self, base_dir, xid_devices=None):
         self.window = None
         self.frame_time = None
         self.trials = None
@@ -46,7 +46,8 @@ class Experiment(object):
         read_settings(self, config_file)
 
         # setup responses
-        self.set_responses()
+        self.devices = None
+        self.set_responses(xid_devices=xid_devices)
 
         # create two clocks, the `self.clock` is used to track time elasped
         # from presentation of experimental stimuli while the `self.exp_clock`
@@ -156,9 +157,10 @@ class Experiment(object):
         # turn off autodraw
         wait_text.autoDraw = False
 
-    def set_responses(self):
+    def set_responses(self, xid_devices=None):
         # check if Cedrus response box is available, else keyboard is used
-        self.response_device, self.devices = set_up_response_box()
+        self.response_device, self.devices = set_up_response_box(
+            xid_devices=xid_devices)
         if (self.response_device is None
             and self.settings['error_when_no_response_box']):
             raise RuntimeError('Could not find Cedrus response box.')

@@ -60,7 +60,7 @@ def set_up_triggers(send_triggers, device='lpt', xid_devices=None,
             raise RuntimeError('Could not find the Cedrus c-pod device!')
 
         cpod_idx = np.where(has_cedrus_cpod)[0][0]
-        device = devices[cpod_idx]
+        device = xid_devices[cpod_idx]
 
         # we set pulse duration to be 30 ms by default
         device.set_pulse_duration(30)
@@ -137,7 +137,7 @@ def set_trigger(exp, event, clock=None):
 
 # responses
 # ---------
-def set_up_response_box(match="Cedrus RB-", error=True):
+def set_up_response_box(match="Cedrus RB-", error=True, xid_devices=None):
     '''Set up Cedrus response box.'''
     try:
         import pyxid2
@@ -145,24 +145,32 @@ def set_up_response_box(match="Cedrus RB-", error=True):
         return None, None
 
     # szukamy c-pod'a w liście urządzeń xid
-    devices = pyxid2.get_xid_devices()
-    has_cedrus_response_box = [match in str(dev) for dev in devices]
+    if xid_devices is None:
+        for n in range(15):
+            try:
+                xid_devices = pyxid2.get_xid_devices()
+                buttonBox = xid_devices[0]
+                break
+            except Exception:
+                core.wait(0.15)
+
+    has_cedrus_response_box = [match in str(dev) for dev in xid_devices]
     if any(has_cedrus_response_box):
         device_idx = has_cedrus_response_box.index(True)
-        response_box = devices[device_idx]
+        response_box = xid_devices[device_idx]
         assert response_box.is_response_device()
         response_box.reset_base_timer()
         response_box.reset_rt_timer()
-        return response_box, devices
+        return response_box, xid_devices
     else:
         if error:
-            if len(devices) == 0:
+            if len(xid_devices) == 0:
                 raise RuntimeError('Could not find any Cedrus devices.')
             else:
                 msg = ('Could not find any Cedrus device matching {} string.'
                        ' Found the following devices:')
                 msg = msg.format(match)
-                for dev in devices:
+                for dev in xid_devices:
                     msg += '\n* ' + str(dev)
                 raise RuntimeError(msg)
         else:
