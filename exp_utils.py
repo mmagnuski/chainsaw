@@ -469,7 +469,11 @@ class Experiment(object):
         # frames loop
         # -----------
         frame_idx = 0
-        while frame_idx < n_frames:
+        total_time = 0.
+        # we subtract half a frame so that when frame counting is not reliable
+        # stimuli presentation time is not biased
+        requested_time = n_frames * self.frame_time - self.frame_time * 0.5
+        while (frame_idx < n_frames) and (total_time < requested_time):
             # for LPT devices - reset trigger after a number of frames
             if trigger_off_time is not None:
                 if frame_idx == trigger_off_time:
@@ -484,6 +488,9 @@ class Experiment(object):
                         el.draw()
             self.window.flip()
 
+            if frame_idx == 0:
+                onset_time = self.clock.getTime()
+
             # check for responses if await_response
             if await_response:
                 out = getKeys(
@@ -491,9 +498,12 @@ class Experiment(object):
                     timeStamped=clock)
                 if not (isinstance(out, list) and len(out) == 0):
                     return out
-            
+
             # move to the next frame
             frame_idx += 1
+
+            # update total time
+            total_time = self.clock.getTime() - onset_time
 
         if await_response:
             return None, np.nan
