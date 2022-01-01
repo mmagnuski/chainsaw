@@ -274,11 +274,20 @@ class Experiment(object):
         n_trials = self.trials.shape[0]
         elasped_trials = 0
 
+        tri_col = ['trial', 'trial_number', 'trial_index']
+        tri_col = [col for col in self.trials.columns if col in tri_col]
+        if len(tri_col) == 0:
+            col_names = ' or '.join(tri_col)
+            raise ValueError('The trials dataframe has to contain a trial '
+                             'identifier column named {}'.format(col_names))
+        else:
+            self.tri_col = tri_col[0]
+
         # show consecutive trials
         for t_idx in range(start_trial_idx, n_trials):
             self.current_idx = t_idx
             self.current_loc = self.trials.index[t_idx]
-            self.current_trial = self.trials.iloc[t_idx, :].trial
+            self.current_trial = self.trials.iloc[t_idx, :][self.tri_col]
 
             # get data from staircase
             if_continue = handle_staircase(self, staircase, staircase_param)
@@ -287,7 +296,7 @@ class Experiment(object):
 
             # present trial
             trial_info = self.trials.loc[self.current_loc, :]
-            self.show_trial(trial_info, feedback=feedback, **args)
+            self.show_trial(trial_info, **args)
             elasped_trials += 1
 
             # inform the staircase about the outcome
@@ -547,7 +556,8 @@ def _check_break(exp, trials_without_break, **args):
 # TODO: allow for a start trial;
 # TODO: allow for a different correctness attribute than ``.ifcorrect``?
 def _check_correctness(exp, n_above, stop_at_corr):
-    corr = exp.beh.query('trial <= {}'.format(exp.current_trial)).ifcorrect
+    qry = '{} <= {}'.format(exp.tri_col, exp.current_trial)
+    corr = exp.beh.query(qry).ifcorrect
     n_resp, n_corr = corr.shape[0], (corr == True).sum()
     disp_corr = (n_resp, n_corr)
 
