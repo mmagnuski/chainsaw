@@ -196,7 +196,7 @@ class Experiment(object):
     # to break from a loop when in subfunction:
     # TODO: change the tests for loop break into one try-except
     # see: https://stackoverflow.com/questions/16073396/breaking-while-loop-with-function
-    def show_all_trials(self, feedback=False, stop_at_corr=None,
+    def show_all_trials(self, stop_at_corr=None,
                         n_consecutive=None, min_trials=None,
                         subject_postfix='', staircase=None,
                         staircase_param=None, break_args=dict(),
@@ -221,8 +221,6 @@ class Experiment(object):
 
         Parameters
         ----------
-        feedback : bool
-            Whether to show feedback (color circle) after the response.
         stop_at_corr : float | None
             If not ``None`` - stop trials presentation after some correctness
             has been attained.
