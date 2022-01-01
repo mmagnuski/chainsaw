@@ -1,3 +1,4 @@
+from numbers import Integral
 from pathlib import Path
 import yaml
 
@@ -128,7 +129,7 @@ def reset_clock(clock):
 
 def set_trigger(exp, event, clock=None):
     '''Prepare trigger to be sent to be activated during next window flip.'''
-    if isinstance(event, int):
+    if isinstance(event, Integral):
         exp.window.callOnFlip(exp.send_trigger, exp, event, clock=clock)
     elif event in exp.triggers:
         trig = exp.triggers[event]
