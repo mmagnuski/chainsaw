@@ -196,33 +196,39 @@ def waitKeys(device, keyList=None, timeStamped=False):
             # response['key'], response['pressed'], response['time']
             key_ok = True if keyList is None else response['key'] in keyList
             response_ok = response['pressed'] and key_ok
-        return response['key'], response['time'] / 1000
+        key, rt = response['key'], response['time'] / 1000
+        if timeStamped:
+            return (key, rt)
+        else:
+            return key
 
 
-def getKeys(device, keyList=None, timeStamped=False):
+# TODO - make sure timeStamped works for Cedrus and keyboard
+def getKeys(device, keyList=None, timeStamped=False, only_first=True):
     '''Emulates event.waitKeys for Cedrus response box or keyboard.
 
     Get all the pressed keys waiting in the buffer.
     '''
     if device is None:
         keys = event.getKeys(keyList=keyList, timeStamped=timeStamped)
-        if len(keys) > 0:
-            keys = keys[-1]
-        return keys
     else:
-        keys, RTs = list(), list()
+        keys = list()
         device.poll_for_response()
         while len(device.response_queue):
             key_event = device.get_next_response()
             if key_event['pressed'] and (keyList is None
                                          or key_event['key'] in keyList):
-                keys.append(key_event['key'])
-                RTs.append(key_event['time'])
+                key, rt = key_event['key'], key_event['time'] / 1000
+                if timeStamped:
+                    keys.append((key, rt))
+                else:
+                    keys.append(key)
             device.poll_for_response()
         device.clear_response_queue()
-        if len(keys) == 0:
-            keys, RTs = None, np.nan
-        return keys, RTs
+
+    if len(keys) > 0 and only_first:
+        keys = keys[0]
+    return keys
 
 
 # TODO - check / clean
