@@ -443,7 +443,12 @@ class Experiment(object):
             clock = reset_clock
 
         # set trigger
-        if (trigger is not None or elem[0] in self.triggers) and not trigger:
+        trigger_is_false = (isinstance(trigger, bool) and not trigger)
+        trigger_none_or_in_settings = (
+            trigger is not None or elem[0] in self.triggers)
+        send_this_trigger = (trigger_none_or_in_settings
+                             and not trigger_is_false)
+        if send_this_trigger:
             trigger = trigger if trigger is not None else elem[0]
             clock_to_reset = None if clock == False else clock
             set_trigger(self, trigger, clock=clock_to_reset)
