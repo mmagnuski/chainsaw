@@ -203,7 +203,7 @@ class Experiment(object):
                         n_consecutive=None, min_trials=None,
                         subject_postfix='', staircase=None,
                         staircase_param=None, break_args=dict(),
-                        post_tri_fun=None, **args):
+                        post_tri_fun=None, break_every=None, **args):
         """Present all trials in the experiment.
 
         Requires the experiment to have:
@@ -324,8 +324,8 @@ class Experiment(object):
 
             # whether to show a break
             trials_without_break = _check_break(
-                self, trials_without_break, corr=disp_corr,
-                **break_args)
+                self, trials_without_break, break_every=break_every,
+                corr=disp_corr, **break_args)
 
     def show_trial(self, trial, feedback=False):
         '''Present a single trial.
@@ -559,12 +559,15 @@ class Experiment(object):
             core.quit()
 
 
-def _check_break(exp, trials_without_break, **args):
+def _check_break(exp, trials_without_break, break_every=None, **args):
     '''Check whether to show the break.'''
-    if 'break_every_n_trials' in exp.settings:
+    if break_every is None and 'break_every_n_trials' in exp.settings:
+        break_every = exp.settings['break_every_n_trials']
+
+    if break_every is not None:
         trials_without_break += 1
-        brk_evr = exp.settings['break_every_n_trials']
-        if_show_break = (brk_evr > 0 and trials_without_break >= brk_evr)
+        if_show_break = (break_every > 0
+                         and trials_without_break >= break_every)
         if if_show_break:
             trials_without_break = 0
             exp.present_break(**args)
