@@ -189,6 +189,9 @@ class Experiment(object):
             self.resp_names.append('quit')
             self.resp_mapping[quit_key] = 'quit'
 
+        self.resp_inv_mapping = {name: key
+                                 for key, name in self.resp_mapping.items()}
+
     # DISPLAY
     # -------
     # TODO: doesn't make sense to present break after last trial...
