@@ -625,8 +625,8 @@ def read_settings(exp, config_file):
 def prepare_instructions(exp, subdir=None):
     '''Find instruction images specific to participants gender.'''
     # check language and gender:
-    if 'language' in self.settings:
-        lang = self.settings['language']
+    if 'language' in exp.settings:
+        lang = exp.settings['language']
     else:
         lang = 'eng'
 
@@ -650,7 +650,7 @@ def prepare_instructions(exp, subdir=None):
     else:
         hasnot = None
 
-    instr = [op.join(instr_dir, fname) for fname in instr
+    instr = [op.join(instr_dir, fname) for fname in all_files
              if good_img(fname, hasnot=hasnot)]
     return instr
 
