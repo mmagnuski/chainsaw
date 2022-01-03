@@ -44,6 +44,6 @@ def feedback_circles(window, radius=1.5, units='deg'):
     feedback_colors = (np.array([[0, 147, 68], [190, 30, 45]],
             dtype='float') / 255 - 0.5) * 2
     args = dict(height=radius, units=units)
-    circ_corr = fix(window, color=feedback_colors[0,:], **args)
-    circ_incorr = fix(window, color=feedback_colors[1,:], **args)
+    circ_corr = fix(window, color=tuple(feedback_colors[0, :]), **args)
+    circ_incorr = fix(window, color=tuple(feedback_colors[1, :]), **args)
     return circ_corr, circ_incorr
