@@ -302,7 +302,7 @@ class Experiment(object):
             start_trial_idx = np.where(tri_nums == start_from)[0][0]
 
         if stop_after is None:
-            stop_before_idx = n_trials
+            stop_before_idx = self.trials.shape[0]
         else:
             tri_nums = self.trials[self.tri_col].values
             stop_before_idx = np.where(tri_nums == stop_after)[0][0] + 1
