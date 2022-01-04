@@ -159,10 +159,12 @@ class Experiment(object):
 
     def set_responses(self, xid_devices=None):
         # check if Cedrus response box is available, else keyboard is used
+        error_no_respbox = (False if 'error_when_no_response_box'
+                            not in self.settings
+                            else self.settings['error_when_no_response_box'])
         self.response_device, self.devices = set_up_response_box(
-            xid_devices=xid_devices)
-        if (self.response_device is None
-            and self.settings['error_when_no_response_box']):
+            xid_devices=xid_devices, error=error_no_respbox)
+        if (self.response_device is None and error_no_respbox):
             raise RuntimeError('Could not find Cedrus response box.')
 
         # pick key mappings depending on available device
