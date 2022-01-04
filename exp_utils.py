@@ -199,9 +199,9 @@ class Experiment(object):
     # to break from a loop when in subfunction:
     # TODO: change the tests for loop break into one try-except
     # see: https://stackoverflow.com/questions/16073396/breaking-while-loop-with-function
-    def show_all_trials(self, stop_at_corr=None,
-                        n_consecutive=None, min_trials=None,
-                        subject_postfix='', staircase=None,
+    def show_all_trials(self, start_from=None, stop_after=None,
+                        stop_at_corr=None, n_consecutive=None,
+                        min_trials=None, subject_postfix='', staircase=None,
                         staircase_param=None, break_args=dict(),
                         post_tri_fun=None, break_every=None, **args):
         """Present all trials in the experiment.
@@ -224,6 +224,14 @@ class Experiment(object):
 
         Parameters
         ----------
+        start_from : int | None
+            Start from given trial. This value refers to trial numbers in
+            trial column, so it does not have to be 0-based. If ``None``
+            starts from the first trial.
+        stop_after : int | None
+            Stop after completing given trial. This value refers to trial
+            numbers in trial column, so it does not have to be 0-based. If
+            ``None``- stops after the last trial.
         stop_at_corr : float | None
             If not ``None`` - stop trials presentation after some correctness
             has been attained.
@@ -258,6 +266,8 @@ class Experiment(object):
         post_tri_fun : function
             Function evaluated after the trial is finished. Has to accept the
             Experiment object as the input argument.
+        break_every : int | None
+            How many trials should pass before the break screen is shown.
         """
         # TODO: perform error checks at the beginning
         if staircase is not None and staircase_param is None:
@@ -272,11 +282,9 @@ class Experiment(object):
             n_above = 0
             min_trials = 0 if min_trials is None else min_trials
             n_consecutive = 1 if n_consecutive is None else n_consecutive
-
-        start_trial_idx = self.current_idx + 1
-        n_trials = self.trials.shape[0]
         elasped_trials = 0
 
+        # find trial colum
         tri_col = ['trial', 'trial_number', 'trial_index']
         tri_col = [col for col in self.trials.columns if col in tri_col]
         if len(tri_col) == 0:
@@ -286,8 +294,21 @@ class Experiment(object):
         else:
             self.tri_col = tri_col[0]
 
+        # check where to start and where to stop
+        if start_from is None:
+            start_trial_idx = self.current_idx + 1
+        else:
+            tri_nums = self.trials[self.tri_col].values
+            start_trial_idx = np.where(tri_nums == start_from)[0][0]
+
+        if stop_after is None:
+            stop_before_idx = n_trials
+        else:
+            tri_nums = self.trials[self.tri_col].values
+            stop_before_idx = np.where(tri_nums == stop_after)[0][0] + 1
+
         # show consecutive trials
-        for t_idx in range(start_trial_idx, n_trials):
+        for t_idx in range(start_trial_idx, stop_before_idx):
             self.current_idx = t_idx
             self.current_loc = self.trials.index[t_idx]
             self.current_trial = self.trials.iloc[t_idx, :][self.tri_col]
