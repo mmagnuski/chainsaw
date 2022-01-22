@@ -2,6 +2,8 @@ import numpy as np
 from psychopy import visual
 
 
+# TODO: shape='cross' should be checked
+# TODO: cross shape stim should be one shape instead of list of two! 
 def fix(window, height=0.3, width=0.1, shape='circle', color=(0.5, 0.5, 0.5),
         **args):
     '''Create fixation dot or fixation cross.
@@ -40,6 +42,7 @@ def fix(window, height=0.3, width=0.1, shape='circle', color=(0.5, 0.5, 0.5),
     return fix_stim
 
 
+# put feedback colors outside, change feedback green?
 def feedback_circles(window, radius=1.5, units='deg'):
     feedback_colors = (np.array([[0, 147, 68], [190, 30, 45]],
             dtype='float') / 255 - 0.5) * 2

@@ -614,10 +614,11 @@ def _check_correctness(exp, n_above, stop_at_corr):
 # time
 # ----
 def get_frame_time(win, frames=25):
-    frame_rate = win.getActualFrameRate(nIdentical=frames)
+    args = dict(nIdentical=frames, nMaxFrames=frames * 10)
+    frame_rate = win.getActualFrameRate(**args)
     if frame_rate is None:
         # try one more time
-        frame_rate = win.getActualFrameRate(nIdentical=frames)
+        frame_rate = win.getActualFrameRate(**args)
     return 1.0 / frame_rate
 
 
@@ -710,7 +711,8 @@ def handle_staircase(exp, staircase, staircase_param):
 def generate_intensity_steps_from_questplus_weibull(staircase, corr=None):
     '''Create instensity steps from finished quest plus object.
 
-    Requires ``questplus`` package.
+    Requires ``questplus`` package (available in standard PsychoPy
+    distribution).
 
     Parameters
     ----------
