@@ -39,3 +39,13 @@ def test_triggers(settings, signal=111):
 def send_trigger(settings, code):
     if settings['send_triggers']:
         windll.inpout32.Out32(settings['port_adress'], code)
+
+
+# - [ ] turn this into a class where the fill_ratio (or other name) can be set
+def progressbar(window, width=200, height=15, pos=(0, 0), perc=0.):
+    # simple progressbar - add to chainsaw
+
+    border = visual.Rect(window, width, height, units='pix', lineWidth=2,
+                         fillColor=[0, 0, 0], lineColor=[1, 1, 1])
+    fill = visual.Rect(window, width * perc, 15, pos=(-100 + width * perc * 0.5, 0),
+                       units='pix', fillColor=[1, 1, 1])
