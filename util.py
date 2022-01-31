@@ -13,7 +13,7 @@ def get_subject_id():
     myDlg.addText('Participant ID')
     myDlg.addField('ID:')
     myDlg.show()  # show dialog and wait for OK or Cancel
-    
+
     if myDlg.OK:  # Ok was pressed
         return myDlg.data[0]
     else:

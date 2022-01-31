@@ -1,12 +1,7 @@
 # -*- encoding: utf-8 -*-
-from __future__ import division, print_function
-
 import os
-import six
-import yaml
 import types
 import random
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -97,7 +92,7 @@ def s2frames(time_in_seconds, frame_time):
     assert isinstance(time_in_seconds, dict)
     time_in_frames = dict()
     toframes = lambda x: int(round(x / frame_time))
-    for k, v in six.iteritems(time_in_seconds):
+    for k, v in time_in_seconds.items():
         if isinstance(v, list):
             time_in_frames[k] = map(toframes, v)
         else:
@@ -107,7 +102,7 @@ def s2frames(time_in_seconds, frame_time):
 
 # utils
 # -----
-# - [ ] add numpy NaN
+# - [ ] add numpy NaN or use pd.isnull...
 def isnull(x):
     if x is None:
         return True
