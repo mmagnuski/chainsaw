@@ -1,5 +1,7 @@
 # chainsaw
-Set of tools for psycho(py). Contains an experiment class that easies things up and a bunch of useful functions.
+*Cause every psycho(py) needs a chainsaw*  
+  
+Set of tools for PsychoPy. Contains an experiment class that easies things up and a bunch of useful functions.
 
 Some of the things that `chainsaw` helps with:
 * reading settings from `settings.yaml` file
@@ -12,5 +14,5 @@ Some of the things that `chainsaw` helps with:
 * simple interface to gather responses from Cedrus response box (`getKeys` and `waitKeys` just like when using keyboard in psychopy)
 * saving triggers to a `.log` file (helps testing triggers without LPT port, Cedrus C-POD or in general without the recording device)
 
-The two core elements of experiment built with `chainsaw` are the experiment object (subclassed from `chainsaw.exp_utils.Experiment`) and the `settings.yaml` file.
+The two core elements of experiment built with `chainsaw` are the experiment object (subclassed from `chainsaw.exp_utils.Experiment`) and the `settings.yaml` file.  
 🚧 more description and examples will arrive later 🚧
