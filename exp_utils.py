@@ -72,11 +72,11 @@ class Experiment(object):
 
     def reset_beh(self):
         '''Reset internal trial counters and clean trigger log.
-        
+
         Also copies trials dataframe as self.beh, which is used for behavioral
         data storage and saving. Should be used whenever self.trials is replaced
         with another dataframe.
-        ''' 
+        '''
         self.last_beh_save = 0
         self.last_log_save = 0
         self.current_idx = -1
@@ -197,7 +197,7 @@ class Experiment(object):
     # DISPLAY
     # -------
     # TODO: doesn't make sense to present break after last trial...
-    # TODO: 
+    # TODO:
     # to break from a loop when in subfunction:
     # TODO: change the tests for loop break into one try-except
     # see: https://stackoverflow.com/questions/16073396/breaking-while-loop-with-function
@@ -708,7 +708,8 @@ def handle_staircase(exp, staircase, staircase_param):
     return True
 
 
-def generate_intensity_steps_from_questplus_weibull(staircase, corr=None):
+def generate_intensity_steps_from_questplus_weibull(staircase, corr=None,
+                                                    return_curve=False):
     '''Create instensity steps from finished quest plus object.
 
     Requires ``questplus`` package (available in standard PsychoPy
@@ -722,6 +723,9 @@ def generate_intensity_steps_from_questplus_weibull(staircase, corr=None):
         The returned stimulus intensity values will correspond to these
         correctness (hit rate) steps in the weibull model fit by the
         quest plus procedure.
+    return_curve : bool
+        If True, return the weibull curve as well as a dictionary with x and y
+        keys.
     scale : str | None
         Can be: ``'linear'``, FIX...
 
@@ -747,4 +751,8 @@ def generate_intensity_steps_from_questplus_weibull(staircase, corr=None):
 
     idxs = [np.abs(prop_corr - x).argmin() for x in corr]
     intensity = intensity_domain[idxs]
-    return intensity
+
+    if return_curve:
+        return intensity, {'x': intensity_domain, 'y': prop_corr}
+    else:
+        return intensity
