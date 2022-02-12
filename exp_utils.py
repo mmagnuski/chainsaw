@@ -14,7 +14,7 @@ from .io_utils import (check_quit, set_trigger, set_up_triggers,
 
 
 class Experiment(object):
-    def __init__(self, base_dir, xid_devices=None):
+    def __init__(self, base_dir, settings=None, xid_devices=None):
         self.window = None
         self.frame_time = None
         self.trials = None
@@ -42,7 +42,8 @@ class Experiment(object):
         # self.image_dir = base_dir / 'img'
 
         # load settings
-        config_file = base_dir / 'settings.yaml'
+        settings = settings if settings is not None else 'settings.yaml'
+        config_file = base_dir / settings
         read_settings(self, config_file)
 
         # setup responses
