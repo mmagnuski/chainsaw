@@ -394,15 +394,18 @@ class Experiment(object):
                 img.draw()
 
         # additional text
-        if isinstance(text, str):
-            # TODO: make text positioning smarter?
-            y_pos = -2.5 if img is not None else 0
-            text = visual.TextStim(self.window, text=text, pos=(0, y_pos),
-                                   color=(-1, -1, -1))
-            text.wrapWidth = 30
-            text.draw()
-        elif isinstance(text, visual.TextStim):
-            text.draw()
+        texts = text if isinstance(text, list) else [text]
+        for text in texts:
+            if isinstance(text, str):
+                # TODO: make text positioning smarter?
+                # TODO: if multiple text strings, put them one below the other
+                y_pos = -2.5 if img is not None else 0
+                text = visual.TextStim(self.window, text=text, pos=(0, y_pos),
+                                    color=(-1, -1, -1))
+                text.wrapWidth = 30
+                text.draw()
+            elif isinstance(text, visual.TextStim):
+                text.draw()
 
         if corr is not None:
             lang = 'pl'
