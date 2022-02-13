@@ -387,7 +387,11 @@ class Experiment(object):
 
         # show image
         if img is not None:
-            img.draw()
+            if isinstance(img, list):
+                for im in img:
+                    im.draw()
+            else:
+                img.draw()
 
         # additional text
         if isinstance(text, str):
