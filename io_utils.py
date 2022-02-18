@@ -123,6 +123,8 @@ def reset_clock(clock):
     if clock is not None:
         if isinstance(clock, Clock):
             clock.reset()
+        elif isinstance(clock, CedrusResponseBox):
+            clock.device.reset_rt_timer()
         else:
             # Cedrus response box
             clock.reset_rt_timer()
@@ -186,9 +188,22 @@ def waitKeys(device, keyList=None, timeStamped=False):
 
     Gets only the first key that was pressed (not released).
     '''
+    from psychopy.hardware.keyboard import Keyboard
+
     if device is None:
         return event.waitKeys(keyList=keyList, timeStamped=timeStamped)[0]
+    elif isinstance(device, Keyboard):
+        keys = device.waitKeys(keyList=keyList)
+        if timeStamped:
+            if len(keys) > 0:
+                keys = [(key.name, key.duration) for key in keys]
+        else:
+            if len(keys) > 0:
+                keys = [key.name for key in keys]
     else: # assumes Cedrus response box
+        if isinstance(device, CedrusResponseBox):
+            device = device.device
+
         response_ok = False
         while not response_ok:
             while not device.has_response():
@@ -205,14 +220,28 @@ def waitKeys(device, keyList=None, timeStamped=False):
 
 
 # TODO - make sure timeStamped works for Cedrus and keyboard
+# TODO - ``only_first`` works for Cedrus only currently
 def getKeys(device, keyList=None, timeStamped=False, only_first=True):
     '''Emulates event.waitKeys for Cedrus response box or keyboard.
 
     Get all the pressed keys waiting in the buffer.
     '''
+    from psychopy.hardware.keyboard import Keyboard
+
     if device is None:
         keys = event.getKeys(keyList=keyList, timeStamped=timeStamped)
+    elif isinstance(device, Keyboard):
+        keys = device.getKeys(keyList=keyList)
+        if timeStamped:
+            if len(keys) > 0:
+                keys = [(key.name, key.duration) for key in keys]
+        else:
+            if len(keys) > 0:
+                keys = [key.name for key in keys]
+
     else:
+        if isinstance(device, CedrusResponseBox):
+            device = device.device
         keys = list()
         device.poll_for_response()
         while len(device.response_queue):
@@ -251,7 +280,7 @@ def check_quit(exp, key=None):
 
 # TODO: check if universal
 def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
-                     send_trigger=True):
+                     send_trigger=True, prefix=None):
     '''Wait for the response given by subject and check its correctness.
 
     This function uses ``.current_idx`` attribute of the Experiment to locate
@@ -297,8 +326,14 @@ def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
 
 def clear_buffer(device=None):
     '''Clear buffer of the keyboard or the Cedurs response box.'''
+    from psychopy.hardware.keyboard import Keyboard
+
     if device is None:
         event.getKeys()
+    elif isinstance(device, Keyboard):
+        device.getKeys()
+    elif isinstance(device, CedrusResponseBox):
+        device.getKeys()  # only once?
     else:
         # taken from psychopy builder script:
         device.poll_for_response()
