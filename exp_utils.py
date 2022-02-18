@@ -345,13 +345,15 @@ class Experiment(object):
             self.show_trial(trial_info, **args)
             elasped_trials += 1
 
-            # inform the staircase about the outcome
-            if stop_at_corr is not None or break_after_error:
+            if (stop_at_corr is not None or break_after_error
+                or staircase is not None):
                 ifcorr = int(self.beh.loc[self.current_loc, 'ifcorrect'])
-                if staircase is not None:
-                    staircase.addResponse(ifcorr)
                 if break_after_error:
                     show_break = ifcorr == 0
+
+            # inform the staircase about the outcome
+            if staircase is not None:
+                staircase.addResponse(ifcorr)
 
             # save data after each trial
             save_beh_data(self, postfix=subject_postfix)
