@@ -293,6 +293,17 @@ def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
         taken from this object.
     correct_resp : str
         Correct response for this question.
+    rt : float | None
+        Response time. If ``None``, then ``waitKeys`` is used to get reaction
+        time.
+    row : int | None
+        Row index in ``.beh`` dataframe. If ``None``, then ``exp.current_idx``
+        is used.
+    send_trigger : bool
+        Whether to send response trigger.
+    prefix : str | None
+        Prefix added to the column name. If ``None``, then no prefix is
+        added.
 
     Returns
     -------
@@ -316,11 +327,12 @@ def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
     response = exp.resp_mapping[key]
     ifcorrect = response == correct_resp if key is not None else False
 
+    prefix = '' if prefix is None else prefix
     row = exp.beh.index[exp.current_idx] if row is None else row
-    exp.beh.loc[row, 'key'] = key
-    exp.beh.loc[row, 'resp'] = response
-    exp.beh.loc[row, 'ifcorrect'] = ifcorrect
-    exp.beh.loc[row, 'RT'] = rt
+    exp.beh.loc[row, prefix + 'key'] = key
+    exp.beh.loc[row, prefix + 'resp'] = response
+    exp.beh.loc[row, prefix + 'ifcorrect'] = ifcorrect
+    exp.beh.loc[row, prefix + 'RT'] = rt
     return key, ifcorrect, rt
 
 
