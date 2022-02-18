@@ -7,6 +7,7 @@ import pandas as pd
 
 from psychopy import core, event
 from psychopy.clock import Clock
+from psychopy.hardware.keyboard import KeyPress
 
 
 # TODO - clean up and test LPT device mode
@@ -386,3 +387,71 @@ def save_beh_data(exp, postfix=''):
     save_beh = exp.beh.iloc[exp.last_beh_save:exp.current_idx + 1, :]
     save_beh.to_csv(fname, mode='a', header=exp.current_idx == 0)
     exp.last_beh_save = exp.current_idx + 1
+
+
+class CedrusResponseBox(object):
+    def __init__(self, device):
+        self.device = device
+        self.pressed = dict()  # keys awaiting release action
+
+    def getKeys(self, keyList=None, waitRelease=False, clear=True):
+        if waitRelease:
+            raise NotImplementedError('waitRelease=True is not yet supported')
+        return get_responses(self, keyList=keyList, clear=clear)
+
+    def waitKeys():
+        pass
+
+
+# FIX: make two lists for pressed - in general and pressed_now
+def get_responses(rbox, keyList=None, clear=True):
+
+    device = rbox.device
+    device.poll_for_response()
+    keys = list()
+
+    if len(device.response_queue) > 0:
+        clear_idx = list()
+        pressed_now = dict()
+
+        # iterate through responses
+        for idx, response in enumerate(device.response_queue):
+            if keyList is None or response['key'] in keyList:
+                name, rt = response['key'], response['time'] / 1000
+                if clear:
+                    clear_idx.append(idx)
+                if response['pressed']:
+                    pressed_now[name] = len(keys)
+
+                    # compose key
+                    key = KeyPress(name, tDown=rt)
+                    key.name = name
+                    key.rt = rt
+                    key.duration = None
+
+                    if name not in rbox.pressed:
+                        rbox.pressed[name] = key
+
+                    keys.append(key)
+                else:
+                    # button was released
+                    # if there is no matching onset we ignore the key
+                    if name in rbox.pressed:
+                        key = rbox.pressed.pop(name)
+                        key.duration = response['time'] / 1000 - key.rt
+
+                        if name in pressed_now:
+                            # CHECK
+                            # maybe not necessary due to in-place operations
+                            use_idx = pressed_now.pop(name)
+                            keys[use_idx] = key
+                        else:
+                            keys.append(key)
+
+                    elif not clear:
+                        clear_idx.append(idx)
+
+        if len(clear_idx) > 0:
+            for idx in clear_idx[::-1]:
+                device.response_queue.pop(idx)
+    return keys
