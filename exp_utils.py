@@ -10,7 +10,7 @@ from psychopy import visual, event, core, gui
 from .instructions import Instructions
 from .io_utils import (check_quit, set_trigger, set_up_triggers,
                        set_up_response_box, save_beh_data, save_trigger_log,
-                       waitKeys, getKeys)
+                       waitKeys, getKeys, CedrusResponseBox)
 
 
 class Experiment(object):
@@ -158,18 +158,33 @@ class Experiment(object):
         # turn off autodraw
         wait_text.autoDraw = False
 
+    # TODO - better documentation of set_responses
     def set_responses(self, xid_devices=None):
         # check if Cedrus response box is available, else keyboard is used
-        error_no_respbox = (False if 'error_when_no_response_box'
-                            not in self.settings
-                            else self.settings['error_when_no_response_box'])
+        field = 'error_when_no_response_box'
+        error_no_respbox = self.settings.get(field, False)
+        field = 'use_response_device_objects'
+        use_resp_objs = self.settings.get(field, False)
+
         self.response_device, self.devices = set_up_response_box(
             xid_devices=xid_devices, error=error_no_respbox)
-        if (self.response_device is None and error_no_respbox):
-            raise RuntimeError('Could not find Cedrus response box.')
+
+        if self.response_device is None:
+            # keyboard
+            if error_no_respbox:
+                raise RuntimeError('Could not find Cedrus response box.')
+            elif use_resp_objs:
+                from psychopy.hardware.keyboard import Keyboard
+                self.response_device = Keyboard()
+            self.response_device_type = 'keyboard'
+        else:
+            # response box
+            if use_resp_objs:
+                self.response_device = CedrusResponseBox(self.response_device)
+            self.response_device_type = 'cedrus'
 
         # pick key mappings depending on available device
-        if self.response_device is None:
+        if self.response_device_type == 'keyboard':
             self.resp_keys = self.settings['resp_keys']
         else:
             # cedrus response box keys
@@ -475,9 +490,16 @@ class Experiment(object):
         # prepare clock reset (psychopy or Cedurs response box)
         if isinstance(reset_clock, bool):
             if reset_clock:
+                from psychopy.hardware.keyboard import Keyboard
+
                 # if Cedrus response box, then pass the response box to reset
-                clock = (self.clock if self.response_device is None
-                         else self.response_device)
+                if self.response_device is None:
+                    clock = self.clock
+                elif isinstance(self.response_device, Keyboard):
+                    clock = self.response_device.clock
+                else:
+                    # Cedrus response box
+                    clock = self.response_device
             else:
                 clock = False
         else:
@@ -536,7 +558,7 @@ class Experiment(object):
             if await_response:
                 out = getKeys(
                     self.response_device, keyList=self.resp_keys,
-                    timeStamped=clock)
+                    timeStamped=clock, only_first=True)
                 if not (isinstance(out, list) and len(out) == 0):
                     return out
 
@@ -547,6 +569,7 @@ class Experiment(object):
             total_time = self.clock.getTime() - onset_time
 
         if await_response:
+            # no response given in time, resturn empty info
             return None, np.nan
 
     # TODO: consider adding session field (saved in filename)
@@ -674,7 +697,8 @@ def prepare_instructions(exp, subdir=None):
     else:
         lang = 'eng'
 
-    resp_subdir = 'keyboard' if exp.response_device is None else 'response_box'
+    resp_subdir = ('keyboard' if exp.response_device_type == 'keyboard'
+                   else 'response_box')
     instr_dir = exp.base_dir / 'instr' / lang / resp_subdir
     if subdir is not None:
         instr_dir = instr_dir / subdir
