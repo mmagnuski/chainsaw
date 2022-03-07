@@ -724,8 +724,12 @@ def prepare_navigation(exp):
     Left and right keys are mapped to previous and next instructions actions.
     '''
     navig = dict()
-    for key, direction in zip(['left', 'right'], ['prev', 'next']):
-        navig[exp.resp_inv_mapping[key]] = direction
+    if 'left' in exp.resp_names and 'right' in exp.resp_names:
+        for key, direction in zip(['left', 'right'], ['prev', 'next']):
+            navig[exp.resp_inv_mapping[key]] = direction
+    else:
+        for key, direction in zip(exp.resp_names[:2], ['prev', 'next']):
+            navig[exp.resp_inv_mapping[key]] = direction
     return navig
 
 

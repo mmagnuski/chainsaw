@@ -12,7 +12,7 @@ def repeat_dataframe(df, n_reps):
         Dataframe to repeat.
     n_reps : int
         Number of times to repeat the dataframe.
-    
+
     Return
     ------
     df_rep : pandas.DataFrame
@@ -161,7 +161,7 @@ def balance_image_position(pos_per_img, max_n=1000):
         img_n_shown = [pos_per_img[ix][pos_idx] for ix in range(n_img)]
         for img_idx in pos_to_img:
             img_n_shown[img_idx] = max_n
-        
+
         # pick least frequent image
         img_idx = balance_draw(img_n_shown, load=1)[0]
 

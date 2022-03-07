@@ -181,8 +181,8 @@ def set_up_response_box(match="Cedrus RB-", error=True, xid_devices=None):
             return None, None
 
 
-# - [ ] consider timing Cedrus responses with psychopy clock
-#       if timeStamped is provided
+# - [ ] why even the keyboard.Keyboard object RTs are unreliable?
+#       try to create a reproducible example
 def waitKeys(device, keyList=None, timeStamped=False):
     '''Emulates event.waitKeys for Cedrus response box or keyboard.
 
@@ -191,7 +191,7 @@ def waitKeys(device, keyList=None, timeStamped=False):
     from psychopy.hardware.keyboard import Keyboard
 
     if device is None:
-        return event.waitKeys(keyList=keyList, timeStamped=timeStamped)[0]
+        keys = event.waitKeys(keyList=keyList, timeStamped=timeStamped)[0]
     elif isinstance(device, Keyboard):
         keys = device.waitKeys(keyList=keyList)
         if timeStamped:
@@ -217,6 +217,9 @@ def waitKeys(device, keyList=None, timeStamped=False):
             return (key, rt)
         else:
             return key
+    if len(keys) > 0:
+        keys = keys[0]
+    return keys
 
 
 # TODO - make sure timeStamped works for Cedrus and keyboard
@@ -274,7 +277,7 @@ def check_quit(exp, key=None):
             key = [k[0] for k in key]
         if isinstance(key, tuple):
             key, _ = key
-        if exp.quitopt['button'] in key:
+        if exp.quitopt['button'] in key or 'quit' in key:
             core.quit()
 
 
@@ -366,23 +369,6 @@ def clear_buffer(device=None):
         while len(device.response_queue):
             device.clear_response_queue()
             device.poll_for_response()  # often there are more resps waiting!
-
-
-# REMOVE - it is defined somewhere else default get_subject_info()
-def get_subject_info(exp):
-    myDlg = gui.Dlg(title="Subject Info", size=(800,600))
-    myDlg.addText('Informacje o osobie badanej')
-    myDlg.addField('ID:')
-    myDlg.addField('wiek:', 30)
-    myDlg.addField(u'płeć:', choices=[u'kobieta', u'mężczyzna'])
-    myDlg.show()  # show dialog and wait for OK or Cancel
-
-    if myDlg.OK:  # Ok was pressed
-        self.subject['id'] = myDlg.data[0]
-        self.subject['age'] = myDlg.data[1]
-        self.subject['sex'] = myDlg.data[2]
-    else:
-        core.quit()
 
 
 # read settings
