@@ -10,7 +10,7 @@ from psychopy import visual, event, core, gui
 from .instructions import Instructions
 from .io_utils import (check_quit, set_trigger, set_up_triggers,
                        set_up_response_box, save_beh_data, save_trigger_log,
-                       waitKeys, getKeys, CedrusResponseBox)
+                       waitKeys, getKeys, CedrusResponseBox, get_device_clock)
 
 
 class Experiment(object):
@@ -492,16 +492,7 @@ class Experiment(object):
         # prepare clock reset (psychopy or Cedurs response box)
         if isinstance(reset_clock, bool):
             if reset_clock:
-                from psychopy.hardware.keyboard import Keyboard
-
-                # if Cedrus response box, then pass the response box to reset
-                if self.response_device is None:
-                    clock = self.clock
-                elif isinstance(self.response_device, Keyboard):
-                    clock = self.response_device.clock
-                else:
-                    # Cedrus response box
-                    clock = self.response_device
+                clock = get_device_clock(self)
             else:
                 clock = False
         else:
@@ -725,6 +716,7 @@ def prepare_instructions(exp, subdir=None):
     return instr
 
 
+# TODO - make it be a little smarter
 def prepare_navigation(exp):
     '''
     Prepare navigation for instructions.

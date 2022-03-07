@@ -278,6 +278,20 @@ def check_quit(exp, key=None):
             core.quit()
 
 
+def get_device_clock(exp):
+    from psychopy.hardware.keyboard import Keyboard
+
+    # if Cedrus response box, then pass the response box to reset
+    if exp.response_device is None:
+        clock = exp.clock
+    elif isinstance(exp.response_device, Keyboard):
+        clock = exp.response_device.clock
+    else:
+        # Cedrus response box
+        clock = exp.response_device
+    return clock
+
+
 # TODO: check if universal
 def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
                      send_trigger=True, prefix=None):
