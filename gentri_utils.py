@@ -169,3 +169,70 @@ def balance_image_position(pos_per_img, max_n=1000):
         pos_to_img.append(img_idx)
 
     return pos_to_img
+
+
+def generate_orientations(num, min_ori_diff=15, ignore_cardinal=False,
+                          full_circle=True, to_radians=False):
+    '''Generate a sequence of orientationswith
+    minimum orientation difference higher than specified value.
+
+    Parameters
+    ----------
+    num : int
+        Number of orientations.
+    min_ori_diff : int
+        Minimal orientation difference.
+    ignore_cardinal : bool
+        Whether to ignore orientations -/+ 5 degrees from cardinal
+        orientations.
+    full_circle : bool
+        If ``False`` generate orientations between 0 and 179 (half-circle).
+    to_radians : bool
+        If ``True`` - return orientations in radians, not angular degrees.
+
+    Returns
+    -------
+    oris : numpy.ndarray
+        Array of orientations.
+    if_success : bool
+        Whether it was possible to generate all orientations while fulfilling
+        the minimum orientation difference constraint.
+    '''
+    if isinstance(ignore_cardinal, bool):
+        ignore_cardinal = 5 if ignore_cardinal else 0
+
+    oris = list()
+    max_orientation = 360 if full_circle else 180
+    if full_circle:
+        ori_use = np.ones(360, dtype='bool')
+        ori_val = np.arange(360) - 180
+    else:
+        ori_use = np.ones(180, dtype='bool')
+        ori_val = np.arange(180) - 90
+
+    if ignore_cardinal > 0:
+        ori_use[:ignore_cardinal] = False
+
+        angles = [90] if not full_circle else [90, 180, 270]
+        for angle in angles:
+            ori_use[angle - ignore_cardinal:angle + ignore_cardinal + 1] = False
+        ori_use[-ignore_cardinal:] = False
+
+    # first one anyway
+    while (len(oris) < num):
+        good_ori = ori_val[ori_use]
+        if len(good_ori) == 0:
+            break
+
+        # pick one and add to oris
+        chosen_ori = np.random.choice(good_ori)
+        oris.append(chosen_ori)
+
+        # remove orientations surrounding the chosen one
+        good_distance = np.abs(ori_val - chosen_ori) > min_ori_diff
+        good_distance_inv = (np.abs(ori_val - full_circle - chosen_ori)
+                             > min_ori_diff)
+        ori_use = ori_use & good_distance & good_distance_inv
+
+    if_success = len(oris) == num
+    return np.array(oris), if_success
