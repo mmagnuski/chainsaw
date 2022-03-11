@@ -181,8 +181,18 @@ def set_up_response_box(match="Cedrus RB-", error=True, xid_devices=None):
             return None, None
 
 
-# - [ ] why even the keyboard.Keyboard object RTs are unreliable?
-#       try to create a reproducible example
+def reformat_keys(keys, timeStamped):
+    if timeStamped:
+        if len(keys) > 0:
+            keys = [(key.name, key.rt) for key in keys]
+    else:
+        if len(keys) > 0:
+            keys = [key.name for key in keys]
+    return keys
+
+
+# TODO: remove the inner Cedrus loop and use the Cedrus object .waitKeys
+# TODO: do not use event.waitKeys
 def waitKeys(device, keyList=None, timeStamped=False):
     '''Emulates event.waitKeys for Cedrus response box or keyboard.
 
@@ -193,13 +203,8 @@ def waitKeys(device, keyList=None, timeStamped=False):
     if device is None:
         keys = event.waitKeys(keyList=keyList, timeStamped=timeStamped)[0]
     elif isinstance(device, Keyboard):
-        keys = device.waitKeys(keyList=keyList)
-        if timeStamped:
-            if len(keys) > 0:
-                keys = [(key.name, key.duration) for key in keys]
-        else:
-            if len(keys) > 0:
-                keys = [key.name for key in keys]
+        keys = device.waitKeys(keyList=keyList, waitRelease=False)
+        keys = reformat_keys(keys, timeStamped=timeStamped)
     else: # assumes Cedrus response box
         if isinstance(device, CedrusResponseBox):
             device = device.device
@@ -222,8 +227,8 @@ def waitKeys(device, keyList=None, timeStamped=False):
     return keys
 
 
-# TODO - make sure timeStamped works for Cedrus and keyboard
-# TODO - ``only_first`` works for Cedrus only currently
+# TODO: remove the inner Cedrus loop and use the Cedrus object .getKeys
+# TODO: do not use event.waitKeys
 def getKeys(device, keyList=None, timeStamped=False, only_first=True):
     '''Emulates event.waitKeys for Cedrus response box or keyboard.
 
@@ -234,13 +239,8 @@ def getKeys(device, keyList=None, timeStamped=False, only_first=True):
     if device is None:
         keys = event.getKeys(keyList=keyList, timeStamped=timeStamped)
     elif isinstance(device, Keyboard):
-        keys = device.getKeys(keyList=keyList)
-        if timeStamped:
-            if len(keys) > 0:
-                keys = [(key.name, key.duration) for key in keys]
-        else:
-            if len(keys) > 0:
-                keys = [key.name for key in keys]
+        keys = device.getKeys(keyList=keyList, waitRelease=False)
+        keys = reformat_keys(keys, timeStamped=timeStamped)
 
     else:
         if isinstance(device, CedrusResponseBox):
@@ -436,6 +436,10 @@ def save_beh_data(exp, postfix=''):
     exp.last_beh_save = exp.current_idx + 1
 
 
+# TODOs:
+# - [ ] add docs
+# - [ ] add waitKeys
+# - [ ] add waitRelease=True
 class CedrusResponseBox(object):
     def __init__(self, device):
         self.device = device
@@ -465,8 +469,10 @@ def get_responses(rbox, keyList=None, clear=True):
         for idx, response in enumerate(device.response_queue):
             if keyList is None or response['key'] in keyList:
                 name, rt = response['key'], response['time'] / 1000
+
                 if clear:
                     clear_idx.append(idx)
+
                 if response['pressed']:
                     pressed_now[name] = len(keys)
 
@@ -488,9 +494,10 @@ def get_responses(rbox, keyList=None, clear=True):
                         key.duration = response['time'] / 1000 - key.rt
 
                         if name in pressed_now:
+                            use_idx = pressed_now.pop(name)
+
                             # CHECK
                             # maybe not necessary due to in-place operations
-                            use_idx = pressed_now.pop(name)
                             keys[use_idx] = key
                         else:
                             keys.append(key)
