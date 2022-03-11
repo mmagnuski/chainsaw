@@ -220,8 +220,8 @@ class Experiment(object):
     def show_all_trials(self, start_from=None, stop_after=None,
                         stop_at_corr=None, n_consecutive=None,
                         min_trials=None, subject_postfix='', staircase=None,
-                        staircase_param=None, break_args=dict(),
-                        post_tri_fun=None, break_every=None,
+                        staircase_param=None, staircase_full_row=False,
+                        break_args=dict(), post_tri_fun=None, break_every=None,
                         break_after_error=False, **args):
         """Present all trials in the experiment.
 
@@ -279,6 +279,9 @@ class Experiment(object):
             experiment to change based on values returned by the staircase.
             The staircase stimulus intensity values are passed to
             ``.show_trial()`` through the ``.trials`` dataframe.
+        staircase_full_row: bool
+            Whether to pass entire trial row to the staircase object. Defaults
+            to ``False``.
         break_args : dict
             Additional arguments passed to ``.present_break()`` method.
             See the docs of ``.present_break()`` for more information.
@@ -347,13 +350,19 @@ class Experiment(object):
 
             if (stop_at_corr is not None or break_after_error
                 or staircase is not None):
-                ifcorr = int(self.beh.loc[self.current_loc, 'ifcorrect'])
+                ifcorr_col = 'ifcorrect'
+                if ifcorr_col not in self.beh.columns:
+                    ifcorr_col = [col for col in self.beh.columns
+                                  if 'ifcorrect' in col][0]
+                ifcorr = int(self.beh.loc[self.current_loc, ifcorr_col])
                 if break_after_error:
                     show_break = ifcorr == 0
 
             # inform the staircase about the outcome
             if staircase is not None:
-                staircase.addResponse(ifcorr)
+                resp = (self.beh.loc[self.current_loc, :] if staircase_full_row
+                        else ifcorr)
+                staircase.addResponse(resp)
 
             # save data after each trial
             save_beh_data(self, postfix=subject_postfix)
@@ -529,6 +538,7 @@ class Experiment(object):
         # we subtract half a frame so that when frame counting is not reliable
         # stimuli presentation time is not biased
         requested_time = n_frames * self.frame_time - self.frame_time * 0.5
+
         while (frame_idx < n_frames) and (total_time < requested_time):
             # for LPT devices - reset trigger after a number of frames
             if trigger_off_time is not None:
