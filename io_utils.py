@@ -201,7 +201,7 @@ def waitKeys(device, keyList=None, timeStamped=False):
     from psychopy.hardware.keyboard import Keyboard
 
     if device is None:
-        keys = event.waitKeys(keyList=keyList, timeStamped=timeStamped)[0]
+        keys = event.waitKeys(keyList=keyList, timeStamped=timeStamped)
     elif isinstance(device, Keyboard):
         keys = device.waitKeys(keyList=keyList, waitRelease=False)
         keys = reformat_keys(keys, timeStamped=timeStamped)
@@ -222,7 +222,7 @@ def waitKeys(device, keyList=None, timeStamped=False):
             return (key, rt)
         else:
             return key
-    if len(keys) > 0:
+    if len(keys) > 0 and isinstance(keys, (list, tuple)):
         keys = keys[0]
     return keys
 
