@@ -131,10 +131,11 @@ class Experiment(object):
     def set_window(self, window, frame_time=None, translate_times=None):
         # set window, hide mouse
         self.window = window
-        window.mouseVisible = False
+        if window.mouseVisible:
+            window.mouseVisible = False
 
         # "please wait" info
-        lang = self.settings['language']
+        lang = self.settings.get('language', 'eng')
         info_text = 'Please wait...' if lang == 'eng' else 'Proszę czekać...'
         wait_text = visual.TextStim(window, text=info_text, height=0.075,
                                     units='height')
