@@ -5,7 +5,7 @@ import yaml
 import numpy as np
 import pandas as pd
 
-from psychopy import core, event
+from psychopy import visual, core, event
 from psychopy.clock import Clock
 from psychopy.hardware.keyboard import KeyPress
 
@@ -509,3 +509,67 @@ def get_responses(rbox, keyList=None, clear=True):
             for idx in clear_idx[::-1]:
                 device.response_queue.pop(idx)
     return keys
+
+
+# TODO: integrate with show_break / present_break
+def forced_break(window, device, time_min=180):
+
+    def time_to_min_sec(time):
+        minutes = int(np.floor(time / 60))
+        seconds = int(time - minutes * 60)
+        return minutes, seconds
+
+
+    def time_to_text(time):
+        minutes, seconds = time_to_min_sec(time)
+        text = f'{minutes:02d}:{seconds:02d}'
+        return text
+
+
+    old_text = time_to_text(time_min)
+    minutes, _ = time_to_min_sec(time_min)
+    main_text = f'You have to take at least a {minutes}-minute break now.'
+    txt = visual.TextStim(window, text=old_text, height=0.06, units='height')
+    main_txt = visual.TextStim(window, text=main_text, height=0.05,
+                               pos=(0, 0.25), units='height')
+
+    pie = visual.Pie(window, radius=0.125, start=360, end=0, lineWidth=0.01,
+                     lineColor='limegreen', interpolate=True,
+                     fillColor='limegreen', units='height')
+
+
+    clock = core.Clock()
+    time = 0
+    while time < time_min:
+        # set timer text
+        time_left = time_min - time
+        new_text = time_to_text(time_left)
+
+        if not new_text == old_text:
+            txt.setText(new_text)
+            old_text = new_text
+
+        # set pie angle
+        angle = 360 * (time / time_min)
+        pie.setEnd(angle)
+
+        # draw
+        pie.draw()
+        txt.draw()
+        main_txt.draw()
+        window.flip()
+
+        # make sure it is possible to skip the break with keyboard
+        keys = getKeys(None, only_first=False)
+        if 'q' in keys:
+            break
+
+        # check time
+        time = clock.getTime()
+
+    main_txt.setText('You can proceed now, if you are ready.\nPress any key to'
+                     ' do so.')
+    main_txt.draw()
+    txt.draw()
+    window.flip()
+    waitKeys(device)
