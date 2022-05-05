@@ -334,15 +334,20 @@ def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
     if key is None and rt is None:
         key, rt = waitKeys(exp.response_device, keyList=exp.resp_keys,
                            timeStamped=exp.clock)
-    if send_trigger:
+
+    no_response = key is None and np.isnan(rt)
+    if send_trigger and not no_response:
         exp.send_trigger(exp, exp.triggers[key])
     exp.check_quit(key=key)
 
-    # check if answer is correct:
-    correct_resp = (correct_resp if correct_resp is not None
-                    else exp.trials.iloc[exp.current_idx, :].correct_resp)
-    response = exp.resp_mapping[key]
-    ifcorrect = response == correct_resp if key is not None else False
+    if no_response:
+        response, ifcorrect = None, False
+    else:
+        # check if answer is correct:
+        correct_resp = (correct_resp if correct_resp is not None
+                        else exp.trials.iloc[exp.current_idx, :].correct_resp)
+        response = exp.resp_mapping[key]
+        ifcorrect = response == correct_resp if key is not None else False
 
     prefix = '' if prefix is None else prefix
     row = exp.beh.index[exp.current_idx] if row is None else row
