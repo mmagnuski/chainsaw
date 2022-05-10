@@ -69,12 +69,12 @@ def set_up_triggers(send_triggers, device='lpt', xid_devices=None,
         device.activate_line(bitmask=255)
         return device, send_trigger_cpod
     elif device == 'lpt':
-        assert port_adress, 'You need to specify port_adress to use LPT port.'
+        assert port_address, 'You need to specify port_adress to use LPT port.'
 
         try:
             # psychopy interface for LPT port
             from psychopy import parallel
-            port = parallel.ParallelPort(address=port_adress)
+            port = parallel.ParallelPort(address=port_address)
 
             # test port
             port.setData(4)
