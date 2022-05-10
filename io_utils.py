@@ -394,7 +394,7 @@ def read_settings(config):
     from types import ModuleType, FunctionType
     if isinstance(config, (str, Path)):
         # yaml file
-        with open(config_file, 'r') as f:
+        with open(config, 'r') as f:
             settings = yaml.load(f)
     elif isinstance(config, ModuleType):
         # python module
