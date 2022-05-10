@@ -517,7 +517,7 @@ def get_responses(rbox, keyList=None, clear=True):
 
 
 # TODO: integrate with show_break / present_break
-def forced_break(window, device, time_min=180):
+def forced_break(window, device, time_min=180, skip_key='x'):
 
     def time_to_min_sec(time):
         minutes = int(np.floor(time / 60))
@@ -566,7 +566,7 @@ def forced_break(window, device, time_min=180):
 
         # make sure it is possible to skip the break with keyboard
         keys = getKeys(None, only_first=False)
-        if 'q' in keys:
+        if skip_key in keys:
             break
 
         # check time
