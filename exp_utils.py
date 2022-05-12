@@ -308,7 +308,7 @@ class Experiment(object):
             n_above = 0
             min_trials = 0 if min_trials is None else min_trials
             n_consecutive = 1 if n_consecutive is None else n_consecutive
-        elasped_trials = 0
+        elapsed_trials = 0
 
         # find trial colum
         tri_col = ['trial', 'trial_number', 'trial_index']
@@ -347,7 +347,7 @@ class Experiment(object):
             # present trial
             trial_info = self.trials.loc[self.current_loc, :]
             self.show_trial(trial_info, **args)
-            elasped_trials += 1
+            elapsed_trials += 1
 
             if (stop_at_corr is not None or break_after_error
                 or staircase is not None):
@@ -377,7 +377,7 @@ class Experiment(object):
             if stop_at_corr is not None:
                 n_above, disp_corr = _check_correctness(
                     self, n_above, stop_at_corr)
-                if n_above >= n_consecutive and elasped_trials >= min_trials:
+                if n_above >= n_consecutive and elapsed_trials >= min_trials:
                     break
 
             # whether to show a break
