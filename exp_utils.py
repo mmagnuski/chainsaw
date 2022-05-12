@@ -758,8 +758,8 @@ def handle_staircase(exp, staircase, staircase_param):
     return True
 
 
-def generate_intensity_steps_from_questplus_weibull(staircase, corr=None,
-                                                    return_curve=False):
+def generate_intensity_steps_from_questplus_weibull(
+    staircase, corr=None, return_curve=False, modify_threshold=None):
     '''Create instensity steps from finished quest plus object.
 
     Requires ``questplus`` package (available in standard PsychoPy
@@ -776,6 +776,12 @@ def generate_intensity_steps_from_questplus_weibull(staircase, corr=None,
     return_curve : bool
         If True, return the weibull curve as well as a dictionary with x and y
         keys.
+    modify_threshold : None | float
+        If not None, the threshold will be multiplied by this value. The goal
+        of this parameter is to proactively counteract changes in participant
+        performance that result from learning. Useful mostly when the number
+        of trials for fitting psychometric function is low - moderate (below
+        80 trials, lets say).
     scale : str | None
         Can be: ``'linear'``, FIX...
 
@@ -792,6 +798,9 @@ def generate_intensity_steps_from_questplus_weibull(staircase, corr=None,
     params = staircase.paramEstimate
     keys = ['threshold', 'slope', 'lapseRate']
     thresh, slope, lapse = [params[key] for key in keys]
+
+    if modify_threshold is not None:
+        thresh *= modify_threshold
 
     intensity_domain = np.linspace(0.000001, 1, num=10_000)
     prop_corr = weibull(intensity=intensity_domain, threshold=thresh,
