@@ -708,22 +708,23 @@ def prepare_instructions(exp, subdir=None):
         instr_dir = instr_dir / subdir
     all_files = os.listdir(instr_dir)
 
-    def good_img(fname, hasnot=None):
-        isgood = 'Slajd' in fname or 'Slide' in fname
-        isgood = isgood and fname.lower().endswith('.png')
+    def good_img(fname, has_not=None):
+        is_good = 'Slajd' in fname or 'Slide' in fname
+        is_good = is_good and fname.lower().endswith('.png')
 
-        if hasnot is not None:
-            isgood = isgood and hasnot not in fname
-        return isgood
+        if has_not is not None:
+            is_good = is_good and has_not not in fname
+        return is_good
 
     if lang == 'pl':
-        isfem = exp.subject['gender'] == 'kobieta'
-        hasnot = 'mal' if isfem else 'fem'
+        # for polish it should be ['płeć'], but we use ['gender']
+        is_fem = exp.subject['gender'] in ['kobieta', 'female']
+        has_not = 'mal' if is_fem else 'fem'
     else:
-        hasnot = None
+        has_not = None
 
     instr = [op.join(instr_dir, fname) for fname in all_files
-             if good_img(fname, hasnot=hasnot)]
+             if good_img(fname, has_not=has_not)]
     return instr
 
 
