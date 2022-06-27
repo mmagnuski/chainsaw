@@ -707,6 +707,7 @@ def prepare_instructions(exp, subdir=None):
     if subdir is not None:
         instr_dir = instr_dir / subdir
     all_files = os.listdir(instr_dir)
+    all_files.sort()  # sort the file names, just to be safe
 
     def good_img(fname, has_not=None):
         is_good = 'Slajd' in fname or 'Slide' in fname
