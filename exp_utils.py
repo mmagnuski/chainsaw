@@ -50,7 +50,7 @@ class Experiment(object):
         self.devices = None
         self.set_responses(xid_devices=xid_devices)
 
-        # create two clocks, the `self.clock` is used to track time elasped
+        # create two clocks, the `self.clock` is used to track time elapsed
         # from presentation of experimental stimuli while the `self.exp_clock`
         # is only used to measure global experiment time (time that passed
         # from experiment start).
@@ -93,7 +93,7 @@ class Experiment(object):
     def get_time(self, stim):
         '''Get time of specific stimulus/event from the config.
 
-        If the config specifies a signle value - this value, specified in
+        If the config specifies a single value - this value, specified in
         frames is drawn. If the time in config is a two-element list,
         a random value from that interval is drawn.
 
@@ -213,10 +213,8 @@ class Experiment(object):
 
     # DISPLAY
     # -------
-    # TODO: doesn't make sense to present break after last trial...
-    # TODO:
     # to break from a loop when in subfunction:
-    # TODO: change the tests for loop break into one try-except
+    # TODO: change the tests for loop break into one try-except?
     # see: https://stackoverflow.com/questions/16073396/breaking-while-loop-with-function
     def show_all_trials(self, start_from=None, stop_after=None,
                         stop_at_corr=None, n_consecutive=None,
@@ -499,7 +497,7 @@ class Experiment(object):
         if not is_list:
             elem = [elem]
 
-        # prepare clock reset (psychopy or Cedurs response box)
+        # prepare clock reset (psychopy or Cedrus response box)
         if isinstance(reset_clock, bool):
             if reset_clock:
                 clock = get_device_clock(self)
@@ -573,20 +571,20 @@ class Experiment(object):
             total_time = self.clock.getTime() - onset_time
 
         if await_response:
-            # no response given in time, resturn empty info
+            # no response given in time, return empty info
             return None, np.nan
 
     # TODO: consider adding session field (saved in filename)
     def get_subject_info(self, window_size=(800, 600), age=True, gender=True,
                          additional=None):
         '''Open gui to gather information about the subject.'''
-        randval = np.random.randint(1000)
-        subj_initial = f'test_{randval:03d}'
+        rand_val = np.random.randint(1000)
+        subj_initial = f'test_{rand_val:03d}'
 
         subj_fields = ['id']
         exp_fields = list()
         myDlg = gui.Dlg(title="Subject Info", size=window_size)
-        myDlg.addText('Participatn information')
+        myDlg.addText('Participant information')
         myDlg.addField('ID:', initial=subj_initial)
 
         if age:
@@ -649,7 +647,7 @@ def _check_correctness(exp, n_above, stop_at_corr):
     n_resp, n_corr = corr.shape[0], (corr == True).sum()
     disp_corr = (n_resp, n_corr)
 
-    # check if correctness conditions are fullfilled
+    # check if correctness conditions are fulfilled
     correctness = n_corr / n_resp
     n_above = n_above + 1 if correctness >= stop_at_corr else 0
     return n_above, disp_corr
@@ -669,12 +667,12 @@ def get_frame_time(win, frames=25):
 def seconds_to_frames(time_in_seconds, frame_time):
     assert isinstance(time_in_seconds, dict)
     time_in_frames = dict()
-    toframes = lambda x: int(round(x / frame_time))
+    to_frames = lambda x: int(round(x / frame_time))
     for key, val in time_in_seconds.items():
         if isinstance(val, list):
-            time_in_frames[key] = list(map(toframes, val))
+            time_in_frames[key] = list(map(to_frames, val))
         else:
-            time_in_frames[key] = toframes(val)
+            time_in_frames[key] = to_frames(val)
     return time_in_frames
 
 
@@ -762,7 +760,7 @@ def handle_staircase(exp, staircase, staircase_param):
 
 def generate_intensity_steps_from_questplus_weibull(
     staircase, corr=None, return_curve=False, modify_threshold=None):
-    '''Create instensity steps from finished quest plus object.
+    '''Create intensity steps from finished quest plus object.
 
     Requires ``questplus`` package (available in standard PsychoPy
     distribution).
@@ -790,7 +788,7 @@ def generate_intensity_steps_from_questplus_weibull(
     Returns
     -------
     intensity : numpy.ndarray
-        Numpy vector with instensity values corresponding to the required
+        Numpy vector with intensity values corresponding to the required
         correctness steps.
     '''
     from questplus.psychometric_function import weibull
