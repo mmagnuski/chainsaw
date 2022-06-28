@@ -379,9 +379,10 @@ class Experiment(object):
                     break
 
             # whether to show a break
-            trials_without_break = _check_break(
-                self, trials_without_break, break_every=break_every,
-                corr=disp_corr, show_break=show_break, **break_args)
+            if not t_idx == stop_before_idx - 1:
+                trials_without_break = _check_break(
+                    self, trials_without_break, break_every=break_every,
+                    corr=disp_corr, show_break=show_break, **break_args)
 
     def show_trial(self, trial, feedback=False):
         '''Present a single trial.
