@@ -607,7 +607,10 @@ class Experiment(object):
             myDlg.addText('Experiment setup')
             for fld, init in additional.items():
                 exp_fields.append(fld)
-                myDlg.addField(fld, initial=init)
+                if isinstance(init, list):
+                    myDlg.addField(fld, choices=init)
+                else:
+                    myDlg.addField(fld, initial=init)
 
         myDlg.show()  # show dialog and wait for OK or Cancel
 
