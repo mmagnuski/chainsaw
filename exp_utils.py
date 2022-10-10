@@ -685,7 +685,10 @@ def seconds_to_frames(time_in_seconds, frame_time):
 
 def read_settings(exp, config_file):
     with open(config_file, 'r') as f:
-        exp.settings = yaml.load(f)
+        try:
+            exp.settings = yaml.load(f)
+        except TypeError:
+            exp.settings = yaml.safe_load(f)
 
     exp.send_triggers = exp.settings['send_triggers']
     exp.triggers = exp.settings['triggers'].copy()
