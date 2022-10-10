@@ -367,7 +367,7 @@ def clear_buffer(device=None):
     elif isinstance(device, Keyboard):
         device.getKeys()
     elif isinstance(device, CedrusResponseBox):
-        device.getKeys()  # only once?
+        device.clear()  # only once?
     else:
         # taken from psychopy builder script:
         device.poll_for_response()
@@ -458,6 +458,10 @@ class CedrusResponseBox(object):
     def waitKeys():
         pass
 
+    def clear(self):
+        clear_buffer(device=self.device)
+        self.pressed = dict()
+
 
 # FIX: make two lists for pressed - in general and pressed_now
 def get_responses(rbox, keyList=None, clear=True):
@@ -508,9 +512,14 @@ def get_responses(rbox, keyList=None, clear=True):
                             keys.append(key)
 
                     elif not clear:
+                        # FIX
+                        # this is not clear (nomen omen)
+                        # why add to clear_idx if clear is False?
                         clear_idx.append(idx)
 
         if len(clear_idx) > 0:
+            # we move from the end of the response queue to the beginning,
+            # removing indices that were marked in clear_idx
             for idx in clear_idx[::-1]:
                 device.response_queue.pop(idx)
     return keys
