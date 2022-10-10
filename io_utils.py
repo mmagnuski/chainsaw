@@ -512,9 +512,13 @@ def get_responses(rbox, keyList=None, clear=True):
                             keys.append(key)
 
                     elif not clear:
-                        # FIX
+                        # CHECK
                         # this is not clear (nomen omen)
                         # why add to clear_idx if clear is False?
+                        #
+                        # it just seems that if a key was released, but the
+                        # press occured in earlier get_responses call, then
+                        # it should always be cleared
                         clear_idx.append(idx)
 
         if len(clear_idx) > 0:
