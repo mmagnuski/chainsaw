@@ -173,8 +173,10 @@ def balance_image_position(pos_per_img, max_n=1000):
 
 def generate_orientations(num, min_ori_diff=15, ignore_cardinal=False,
                           full_circle=True, to_radians=False):
-    '''Generate a sequence of orientationswith
-    minimum orientation difference higher than specified value.
+    '''Generate a sequence of random orientations .
+
+    Allows to set minimum orientation difference or ignore angles close to
+    cardinal directions (which are easier for human participants).
 
     Parameters
     ----------
