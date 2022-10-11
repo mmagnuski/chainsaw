@@ -290,10 +290,24 @@ def rotate_stim_index(trials, stim_columns):
 
 
 # TODO add option to shift conditions within a different condition combination
-def shift_conditions(trials, condition_column):
-    '''Reorder trials in the dataframe so that conditions are shifted.
+def rotate_conditions(trials, condition_column, within=None):
+    '''Reorder trials in the dataframe so that conditions are rotated/shifted.
 
-    Condition order AACBC can be shifted to BBACA or CCBAB.
+    Condition order AACBC can be rotated to BBACA or CCBAB.
+
+    Parameters
+    ----------
+    trials : pandas.DataFrame
+        Dataframe with trial information and columns with condition names.
+    condition_column : str
+        Name of the column with condition names.
+    within : str
+        Query to select trials within which to rotate conditions.
+
+    Returns
+    -------
+    trials : pandas.DataFrame
+        Dataframe with shifted conditions.
     '''
     import random
     conditions = np.unique(trials.loc[:, condition_column])
