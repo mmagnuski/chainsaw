@@ -238,3 +238,88 @@ def generate_orientations(num, min_ori_diff=15, ignore_cardinal=False,
 
     if_success = len(oris) == num
     return np.array(oris), if_success
+
+
+def rotate_stim_index(trials, stim_columns):
+    '''Rotate stimulus indices in a dataframe.
+
+    The rotation is a process where stimulus indices are shifted (with
+    wrap-around) by a random number. For example stimulus indices ``[0, 1, 2]``
+    can be rotated by 1 to get ``[1, 2, 0]``. This way every stimulus index
+    `0` will be changed to `1` (and `1` to `2` and `2` to `0`) in every column
+    listed in ``stim_columns``.
+    The stimulus indices are assumed to be in the range ``[0, n_stim)`` where
+    ``n_stim`` is the number of stimuli.
+    The rotation is done in-place.
+
+    Parameters
+    ----------
+    trials : pandas.DataFrame
+        Dataframe with trial information and columns with stimulus indices.
+    stim_columns : list
+        List of columns to rotate.
+
+    Returns
+    -------
+    trials : pandas.DataFrame
+        Rotated dataframe.
+    shift : int
+        Chosen shift value.
+    '''
+    import random
+
+    stim_indices = np.unique(trials.loc[:, stim_columns[0]])
+    n_img = len(stim_indices)
+
+    # choose random shift
+    shift = random.choice([ix for ix in range(n_img)])
+    if shift > 0:
+        new_stim_indices = np.concatenate(
+            [stim_indices[shift:], stim_indices[:shift]])
+
+        for col in stim_columns:
+            img_idx = trials.loc[:, col].values.astype('int')
+            msk = img_idx >= 0
+            img_idx = img_idx[msk]
+            # could also not assume [0, n_stim) range:
+            # img_idx = (img_idx[:, None] == stim_indices[None, :])
+            new_img_idx = new_stim_indices[img_idx]
+            trials.loc[msk, col] = new_img_idx
+
+    return trials, shift
+
+
+# TODO add option to shift conditions within a different condition combination
+def shift_conditions(trials, condition_column):
+    '''Reorder trials in the dataframe so that conditions are shifted.
+
+    Condition order AACBC can be shifted to BBACA or CCBAB.
+    '''
+    import random
+    conditions = np.unique(trials.loc[:, condition_column])
+    n_conditions = len(conditions)
+    cond_indices = np.arange(n_conditions, dtype='int')
+
+    shift = random.choice([ix for ix in range(n_conditions)])
+
+    trial_labels = np.arange(1, trials.shape[0] + 1, dtype='int')
+    do_trial_renum = ('trial' in trials.columns
+                    and (trials.trial == trial_labels).all())
+
+    if shift > 0:
+        cond_indices_shifted = np.concatenate(
+            [cond_indices[shift:], cond_indices[:shift]])
+        indices = [trials.query(f'distractor == "{cnd}"').index
+                for cnd in conditions]
+
+        new_trials = trials.copy()
+        for orig_ix, new_ix in enumerate(cond_indices_shifted):
+            new_trials.loc[indices[new_ix],
+                        :] = trials.loc[indices[orig_ix], :].values
+
+        # re-numerate trials
+        new_trials = new_trials.reset_index(drop=True)
+        if do_trial_renum:
+            new_trials.loc[:, 'trial'] = trial_labels
+
+    return new_trials, shift
