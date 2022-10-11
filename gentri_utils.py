@@ -335,5 +335,7 @@ def rotate_conditions(trials, condition_column, within=None):
         new_trials = new_trials.reset_index(drop=True)
         if do_trial_renum:
             new_trials.loc[:, 'trial'] = trial_labels
+    else:
+        new_trials = trials.copy()
 
     return new_trials, shift
