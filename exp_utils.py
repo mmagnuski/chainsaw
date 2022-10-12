@@ -150,6 +150,7 @@ class Experiment(object):
         if self.frame_time is None:
             if frame_time is None:
                 frame_time = get_frame_time(window)
+                print(f'Measured frame time is: {frame_time:0.3f}')
 
             # update stimuli times
             if translate_times is None:
@@ -677,7 +678,9 @@ def seconds_to_frames(time_in_seconds, frame_time):
     time_in_frames = dict()
     to_frames = lambda x: int(round(x / frame_time))
     for key, val in time_in_seconds.items():
-        if isinstance(val, list):
+        if isinstance(val, str) and val == 'inf':
+            time_in_frames[key] = np.inf
+        elif isinstance(val, list):
             time_in_frames[key] = list(map(to_frames, val))
         else:
             time_in_frames[key] = to_frames(val)
@@ -686,7 +689,10 @@ def seconds_to_frames(time_in_seconds, frame_time):
 
 def read_settings(exp, config_file):
     with open(config_file, 'r') as f:
-        exp.settings = yaml.load(f)
+        try:
+            exp.settings = yaml.load(f)
+        except TypeError:
+            exp.settings = yaml.safe_load(f)
 
     exp.send_triggers = exp.settings['send_triggers']
     exp.triggers = exp.settings['triggers'].copy()
