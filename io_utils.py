@@ -12,7 +12,7 @@ from psychopy.hardware.keyboard import KeyPress
 
 # TODO - clean up and test LPT device mode
 def set_up_triggers(send_triggers, device='lpt', xid_devices=None,
-                    port_address=None):
+                    port_address=None, pulse_duration=None):
     '''Prepare procedure for sending triggers.
 
     Find Cedrus C-POD device and send a test trigger. Requires the pyxid2
@@ -65,7 +65,8 @@ def set_up_triggers(send_triggers, device='lpt', xid_devices=None,
         device = xid_devices[cpod_idx]
 
         # we set pulse duration to be 30 ms by default
-        device.set_pulse_duration(30)
+        pulse_duration = 30 if pulse_duration is None else pulse_duration
+        device.set_pulse_duration(pulse_duration)
         device.activate_line(bitmask=255)
         return device, send_trigger_cpod
     elif device == 'lpt':

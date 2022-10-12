@@ -62,9 +62,13 @@ class Experiment(object):
         # set up trigger log and trigger device
         device = (self.settings['trigger_device']
                   if 'trigger_device' in self.settings else None)
+        pulse_duration = (self.settings['trigger_pulse_duration']
+                          if 'trigger_pulse_duration' in self.settings
+                          else None)
         self.trigger_log = {'time': list(), 'trigger': list(), 'trial': list()}
         self.trigger_device, self.send_trigger = set_up_triggers(
-            self.send_triggers, device=device, xid_devices=self.devices)
+            self.send_triggers, device=device, xid_devices=self.devices,
+            pulse_duration=pulse_duration)
 
     def create_stimuli(self, window):
         '''Create stimuli used in the experiment. You need to override this
