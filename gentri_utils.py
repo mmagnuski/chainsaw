@@ -318,7 +318,7 @@ def rotate_conditions(trials, condition_column, within=None):
 
     trial_labels = np.arange(1, trials.shape[0] + 1, dtype='int')
     do_trial_renum = ('trial' in trials.columns
-                    and (trials.trial == trial_labels).all())
+                      and (trials.trial == trial_labels).all())
 
     if shift > 0:
         cond_indices_shifted = np.concatenate(
