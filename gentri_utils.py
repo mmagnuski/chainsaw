@@ -323,8 +323,13 @@ def rotate_conditions(trials, condition_column, within=None):
     if shift > 0:
         cond_indices_shifted = np.concatenate(
             [cond_indices[shift:], cond_indices[:shift]])
-        indices = [trials.query(f'distractor == "{cnd}"').index
-                for cnd in conditions]
+
+        if isinstance(conditions[0], str):
+            indices = [trials.query(f'{condition_column} == "{cnd}"').index
+                       for cnd in conditions]
+        else:
+            indices = [trials.query(f'{condition_column} == {cnd}').index
+                       for cnd in conditions]
 
         new_trials = trials.copy()
         for orig_ix, new_ix in enumerate(cond_indices_shifted):
