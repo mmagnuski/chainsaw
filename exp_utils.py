@@ -705,7 +705,7 @@ def read_settings(exp, config_file):
 
 
 # TODO: make universal
-def prepare_instructions(exp, subdir=None):
+def prepare_instructions(exp, subdir=None, postfix=None):
     '''Find instruction images specific to participants gender.'''
     # check language and gender:
     if 'language' in exp.settings:
@@ -715,6 +715,8 @@ def prepare_instructions(exp, subdir=None):
 
     resp_subdir = ('keyboard' if exp.response_device_type == 'keyboard'
                    else 'response_box')
+    if postfix is not None:
+        resp_subdir += postfix
     instr_dir = exp.base_dir / 'instr' / lang / resp_subdir
     if subdir is not None:
         instr_dir = instr_dir / subdir
