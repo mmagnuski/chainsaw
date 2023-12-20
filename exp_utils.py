@@ -132,7 +132,30 @@ class Experiment(object):
         '''
         check_quit(self, key=key)
 
-    def set_window(self, window, frame_time=None, translate_times=None):
+    def set_window(self, window, frame_time=None, translate_times=None,
+                   request_screen_refresh_rate=None,
+                   screen_refresh_rate_acceptable_difference=2.5):
+        '''Set window and check screen refresh rate.
+
+        Parameters
+        ----------
+        window : psychopy.visual.Window
+            Window to be set.
+        frame_time : float
+            Frame time in seconds. If not specified, it will be measured.
+        translate_times : list of str
+            List of stimuli names that should be translated from seconds to
+            frames.
+        request_screen_refresh_rate : float | None
+            If not ``None``, the measured screen refresh rate will be compared
+            to this value. If the difference is larger than the
+            ``screen_refresh_rate_acceptable_difference``, an error will be
+            raised.
+        screen_refresh_rate_acceptable_difference : float
+            Acceptable difference between measured and requested screen refresh
+            rate. If the difference is larger, the user will be asked to
+            confirm the screen refresh rate.
+        '''
         # set window, hide mouse
         self.window = window
         if window.mouseVisible:
@@ -163,6 +186,50 @@ class Experiment(object):
 
         # turn off autodraw
         wait_text.autoDraw = False
+
+        if request_screen_refresh_rate:
+            # check if screen refresh rate is acceptable
+            screen_refresh_rate = 1 / self.frame_time
+            difference = abs(screen_refresh_rate - request_screen_refresh_rate)
+
+            msg = (f'Measured screen refresh rate: {screen_refresh_rate:0.2f}'
+                   ' Hz\nRequested screen refresh rate: '
+                   f'{request_screen_refresh_rate:0.2f} Hz')
+
+            msg_text = visual.TextStim(window, text=msg, height=0.05,
+                                       pos=(0, 0.15), units='height')
+            msg_text.autoDraw = True
+            window.flip()
+
+            # show the message for a few frames
+            for _ in range(20):
+                window.flip()
+
+            # show a message accepting or rejecting the screen refresh rate
+            if difference > screen_refresh_rate_acceptable_difference:
+                accept_screen = False
+                msg = 'Screen refresh rate is different from requested'
+                msg_color = 'red'
+            else:
+                accept_screen = True
+                msg = 'OK'
+                msg_color = 'green'
+
+            msg_ifaccept = visual.TextStim(
+                window, text=msg, height=0.05, pos=(0, -0.15), units='height',
+                color=msg_color
+            )
+            msg_ifaccept.autoDraw = True
+            window.flip()
+
+            # wait for a keypress
+            key = event.waitKeys()[0]
+            msg_text.autoDraw = False
+            msg_ifaccept.autoDraw = False
+
+            if not accept_screen:
+                raise RuntimeError('Screen refresh rate is not acceptable.')
+
 
     # TODO - better documentation of set_responses
     def set_responses(self, xid_devices=None):
