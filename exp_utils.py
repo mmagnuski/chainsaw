@@ -396,7 +396,8 @@ class Experiment(object):
         '''
         pass
 
-    def present_break(self, img=None, text=None, corr=None, corr_pos=None):
+    def present_break(self, img=None, text=None, corr=None, corr_pos=None,
+                      text_params=dict()):
         '''Start a break that is controlled by the subject.
 
         Parameters
@@ -411,6 +412,8 @@ class Experiment(object):
             of the screen.
         corr_pos : tuple | None
             Position of the correctness text (in relevant window units).
+        text_params : dict
+            Additional parameters passed to ``psychopy.visual.TextStim``.
         '''
         # prepare break trigger
         if 'break' in self.triggers:
@@ -431,8 +434,9 @@ class Experiment(object):
                 # TODO: make text positioning smarter?
                 # TODO: if multiple text strings, put them one below the other
                 y_pos = -2.5 if img is not None else 0
-                text = visual.TextStim(self.window, text=text, pos=(0, y_pos),
-                                    color=(-1, -1, -1))
+                text = visual.TextStim(
+                    self.window, text=text, pos=(0, y_pos), color=(-1, -1, -1),
+                    **text_params)
                 text.wrapWidth = 30
                 text.draw()
             elif isinstance(text, visual.TextStim):
