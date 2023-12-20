@@ -309,8 +309,8 @@ def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
     exp : Experiment
         Experiment object - response keys, timings and experiment clock are
         taken from this object.
-    correct_resp : str
-        Correct response for this question.
+    correct_resp : str | list
+        Correct response (or responses) for this question.
     rt : float | None
         Response time. If ``None``, then ``waitKeys`` is used to get reaction
         time.
@@ -348,7 +348,10 @@ def handle_responses(exp, correct_resp=None, key=None, rt=None, row=None,
         correct_resp = (correct_resp if correct_resp is not None
                         else exp.trials.iloc[exp.current_idx, :].correct_resp)
         response = exp.resp_mapping[key]
-        ifcorrect = response == correct_resp if key is not None else False
+        if isinstance(correct_resp, str):
+            ifcorrect = response == correct_resp if key is not None else False
+        else:
+            ifcorrect = response in correct_resp if key is not None else False
 
     prefix = '' if prefix is None else prefix
     row = exp.beh.index[exp.current_idx] if row is None else row
