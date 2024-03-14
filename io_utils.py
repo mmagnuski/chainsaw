@@ -106,7 +106,7 @@ def send_trigger_cpod(exp, code, clock=None):
 def send_trigger_lpt_inpout(exp, code, clock=None):
     '''Send trigger via LPT port.
 
-    Uses inpout32 library and register trigger time to log.'''
+    Uses inpout32 library and registers trigger time to log.'''
     self.inpout32.Out32(self.port_address, code)
     register_trigger(exp, code, clock=clock)
 
@@ -238,6 +238,7 @@ def getKeys(device, keyList=None, timeStamped=False, only_first=True):
     from psychopy.hardware.keyboard import Keyboard
 
     if device is None:
+        # assume default psychopy keyboard
         keys = event.getKeys(keyList=keyList, timeStamped=timeStamped)
     elif isinstance(device, Keyboard):
         keys = device.getKeys(keyList=keyList, waitRelease=False)
@@ -277,7 +278,8 @@ def check_quit(exp, key=None):
         if isinstance(key[0], tuple):
             key = [k[0] for k in key]
         if isinstance(key, tuple):
-            key, _ = key
+            this_key, _ = key
+            key = [this_key]
         if exp.quitopt['button'] in key or 'quit' in key:
             core.quit()
 
