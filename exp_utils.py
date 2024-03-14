@@ -381,10 +381,10 @@ class Experiment(object):
         elapsed_trials = 0
 
         # find trial colum
-        tri_col = ['trial', 'trial_number', 'trial_index']
-        tri_col = [col for col in self.trials.columns if col in tri_col]
+        tri_col_orig = ['trial', 'trial_number', 'trial_index']
+        tri_col = [col for col in self.trials.columns if col in tri_col_orig]
         if len(tri_col) == 0:
-            col_names = ' or '.join(tri_col)
+            col_names = ' or '.join(tri_col_orig)
             raise ValueError('The trials dataframe has to contain a trial '
                              'identifier column named {}'.format(col_names))
         else:
@@ -772,9 +772,17 @@ def read_settings(exp, config_file):
 
 
 # TODO: make universal
-def prepare_instructions(exp, subdir=None, postfix=None):
+def prepare_instructions(exp, subdir=None, postfix=None, prefix=None):
     '''Find instruction images specific to participants gender.'''
     # check language and gender:
+    if prefix is None:
+        prefix = ['Slide', 'Slajd']
+    else:
+        if not isinstance(prefix, list):
+            prefix = [prefix]
+
+    image_exts = ['.png', '.jpg', '.jpeg', '.bmp']
+
     if 'language' in exp.settings:
         lang = exp.settings['language']
     else:
@@ -791,8 +799,9 @@ def prepare_instructions(exp, subdir=None, postfix=None):
     all_files.sort()  # sort the file names, just to be safe
 
     def good_img(fname, has_not=None):
-        is_good = 'Slajd' in fname or 'Slide' in fname
-        is_good = is_good and fname.lower().endswith('.png')
+        is_good = any(x in fname for x in prefix)
+        is_good = is_good and any(
+            fname.lower().endswith(ext) for ext in image_exts)
 
         if has_not is not None:
             is_good = is_good and has_not not in fname
