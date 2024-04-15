@@ -356,7 +356,8 @@ class Experiment(object):
             to ``False``.
         staircase_ignore_na: bool
             Whether to ignore trials with no response in the staircase.
-            Defaults to ``False``.
+            Defaults to ``False``. The no response is indicated by NaN in the
+            ``'RT'`` column of the ``.beh`` DataFrame.
         break_args : dict
             Additional arguments passed to ``.present_break()`` method.
             See the docs of ``.present_break()`` for more information.
@@ -401,14 +402,14 @@ class Experiment(object):
             tri_nums = self.trials[self.tri_col].values
             start_trial_idx = np.where(tri_nums == start_from)[0][0]
 
-        if stop_after is None:
-            stop_before_idx = self.trials.shape[0]
-        else:
+        if stop_after is not None:
             tri_nums = self.trials[self.tri_col].values
             stop_before_idx = np.where(tri_nums == stop_after)[0][0] + 1
 
         # show consecutive trials
-        for t_idx in range(start_trial_idx, stop_before_idx):
+        t_idx = start_trial_idx
+        continue_showing = True
+        while continue_showing:
             self.current_idx = t_idx
             self.current_loc = self.trials.index[t_idx]
             self.current_trial = self.trials.iloc[t_idx, :][self.tri_col]
@@ -465,6 +466,14 @@ class Experiment(object):
                 trials_without_break = _check_break(
                     self, trials_without_break, break_every=break_every,
                     corr=disp_corr, show_break=show_break, **break_args)
+
+            t_idx += 1
+            if stop_after is None:
+                # we do it here in case trials are added on the fly
+                stop_before_idx = self.trials.shape[0]
+
+            if t_idx == stop_before_idx:
+                continue_showing = False
 
     def show_trial(self, trial, feedback=False):
         '''Present a single trial.
