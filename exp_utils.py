@@ -292,7 +292,8 @@ class Experiment(object):
                         stop_at_corr=None, n_consecutive=None,
                         min_trials=None, subject_postfix='', staircase=None,
                         staircase_param=None, staircase_full_row=False,
-                        break_args=dict(), post_tri_fun=None, break_every=None,
+                        staircase_ignore_na=False, break_args=dict(),
+                        post_tri_fun=None, break_every=None,
                         break_after_error=False, **args):
         """Present all trials in the experiment.
 
@@ -353,6 +354,9 @@ class Experiment(object):
         staircase_full_row: bool
             Whether to pass entire trial row to the staircase object. Defaults
             to ``False``.
+        staircase_ignore_na: bool
+            Whether to ignore trials with no response in the staircase.
+            Defaults to ``False``.
         break_args : dict
             Additional arguments passed to ``.present_break()`` method.
             See the docs of ``.present_break()`` for more information.
@@ -431,9 +435,15 @@ class Experiment(object):
 
             # inform the staircase about the outcome
             if staircase is not None:
-                resp = (self.beh.loc[self.current_loc, :] if staircase_full_row
-                        else ifcorr)
-                staircase.addResponse(resp)
+                inform_staircase = True
+                if staircase_ignore_na:
+                    rt = self.beh.loc[self.current_loc, 'RT']
+                    if np.isnan(rt):
+                        inform_staircase = False
+                if inform_staircase:
+                    resp = (self.beh.loc[self.current_loc, :]
+                            if staircase_full_row else ifcorr)
+                    staircase.addResponse(resp)
 
             # save data after each trial
             save_beh_data(self, postfix=subject_postfix)
