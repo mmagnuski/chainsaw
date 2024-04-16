@@ -461,6 +461,10 @@ class Experiment(object):
                 if n_above >= n_consecutive and elapsed_trials >= min_trials:
                     break
 
+            if stop_after is None:
+                # we do it here in case trials are added on the fly
+                stop_before_idx = self.trials.shape[0]
+
             # whether to show a break
             if not t_idx == stop_before_idx - 1:
                 trials_without_break = _check_break(
@@ -468,10 +472,6 @@ class Experiment(object):
                     corr=disp_corr, show_break=show_break, **break_args)
 
             t_idx += 1
-            if stop_after is None:
-                # we do it here in case trials are added on the fly
-                stop_before_idx = self.trials.shape[0]
-
             if t_idx == stop_before_idx:
                 continue_showing = False
 
