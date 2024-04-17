@@ -712,8 +712,8 @@ class Experiment(object):
         subject = dict()
         if myDlg.OK:  # Ok was pressed
             if isinstance(myDlg.data, dict):
-                subj_fields[0] = 'ID'
-                for fld in subj_fields:
+                subject['id'] = myDlg.data['ID:']
+                for fld in subj_fields[1:]:
                     subject[fld] = myDlg.data[fld]
                 for fld in exp_fields:
                     self.settings[fld] = myDlg.data[fld]
