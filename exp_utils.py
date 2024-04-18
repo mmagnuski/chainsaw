@@ -14,7 +14,8 @@ from .io_utils import (check_quit, set_trigger, set_up_triggers,
 
 
 class Experiment(object):
-    def __init__(self, base_dir, settings=None, xid_devices=None):
+    def __init__(self, base_dir, settings=None, xid_devices=None,
+                 set_triggers=True):
         self.window = None
         self.frame_time = None
         self.trials = None
@@ -59,16 +60,8 @@ class Experiment(object):
 
         # port stuff
         # ----------
-        # set up trigger log and trigger device
-        device = (self.settings['trigger_device']
-                  if 'trigger_device' in self.settings else None)
-        pulse_duration = (self.settings['trigger_pulse_duration']
-                          if 'trigger_pulse_duration' in self.settings
-                          else None)
-        self.trigger_log = {'time': list(), 'trigger': list(), 'trial': list()}
-        self.trigger_device, self.send_trigger = set_up_triggers(
-            self.send_triggers, device=device, xid_devices=self.devices,
-            pulse_duration=pulse_duration)
+        if set_triggers:
+            self.set_triggers()
 
     def create_stimuli(self, window):
         '''Create stimuli used in the experiment. You need to override this
@@ -282,6 +275,18 @@ class Experiment(object):
 
         self.resp_inv_mapping = {name: key
                                  for key, name in self.resp_mapping.items()}
+
+    def set_triggers(self):
+        # set up trigger log and trigger device
+        device = (self.settings['trigger_device']
+                  if 'trigger_device' in self.settings else None)
+        pulse_duration = (self.settings['trigger_pulse_duration']
+                          if 'trigger_pulse_duration' in self.settings
+                          else None)
+        self.trigger_log = {'time': list(), 'trigger': list(), 'trial': list()}
+        self.trigger_device, self.send_trigger = set_up_triggers(
+            self.send_triggers, device=device, xid_devices=self.devices,
+            pulse_duration=pulse_duration)
 
     # DISPLAY
     # -------
@@ -670,6 +675,7 @@ class Experiment(object):
             # no response given in time, return empty info
             return None, np.nan
 
+    # TODO: mark send_triggers text or value in RED if ``False``
     # TODO: consider adding session field (saved in filename)
     def get_subject_info(self, window_size=(800, 600), age=True, gender=True,
                          additional=None):
@@ -694,9 +700,10 @@ class Experiment(object):
             myDlg.addField('gender:', choices=choices)
 
         if additional is None:
-            additional = {'skip training': False}
+            additional = {'skip training': False,
+                          'send_triggers': self.send_triggers}
         elif isinstance(additional, bool) and not additional:
-            additional = {}
+            additional = {'send_triggers': self.send_triggers}
 
         if additional:
             myDlg.addText('Experiment setup')
