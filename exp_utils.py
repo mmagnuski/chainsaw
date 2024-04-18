@@ -718,12 +718,19 @@ class Experiment(object):
 
         subject = dict()
         if myDlg.OK:  # Ok was pressed
-            for idx, fld in enumerate(subj_fields):
-                subject[fld] = myDlg.data[idx]
+            if isinstance(myDlg.data, dict):
+                subject['id'] = myDlg.data['ID:']
+                for fld in subj_fields[1:]:
+                    subject[fld] = myDlg.data[fld]
+                for fld in exp_fields:
+                    self.settings[fld] = myDlg.data[fld]
+            else:
+                for idx, fld in enumerate(subj_fields):
+                    subject[fld] = myDlg.data[idx]
+                for idx, fld in enumerate(exp_fields, start=idx + 1):
+                    self.settings[fld] = myDlg.data[idx]
             self.subject = subject
 
-            for idx, fld in enumerate(exp_fields, start=idx + 1):
-                self.settings[fld] = myDlg.data[idx]
         else:
             core.quit()
 
