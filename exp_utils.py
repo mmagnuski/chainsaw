@@ -704,6 +704,8 @@ class Experiment(object):
                           'send_triggers': self.send_triggers}
         elif isinstance(additional, bool) and not additional:
             additional = {'send_triggers': self.send_triggers}
+        else:
+            additional.update({'send_triggers': self.send_triggers})
 
         if additional:
             myDlg.addText('Experiment setup')
@@ -730,7 +732,7 @@ class Experiment(object):
                 for idx, fld in enumerate(exp_fields, start=idx + 1):
                     self.settings[fld] = myDlg.data[idx]
             self.subject = subject
-
+            self.send_triggers = self.settings['send_triggers']
         else:
             core.quit()
 
